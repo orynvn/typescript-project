@@ -11,6 +11,7 @@
 Tạo skeleton của toàn bộ project. Đây là nền tảng cho mọi thứ phía sau, cần làm đúng ngay từ đầu.
 
 **Việc cần làm:**
+
 - Khởi tạo `package.json` root với `"private": true` và `pnpm workspaces`
 - Cài Turborepo (`turbo`) làm dev dependency ở root
 - Tạo file `turbo.json` với pipeline: `build`, `dev`, `lint`, `test`
@@ -36,6 +37,7 @@ Tạo skeleton của toàn bộ project. Đây là nền tảng cho mọi thứ 
   ```
 
 **Cấu hình `turbo.json`:**
+
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
@@ -57,6 +59,7 @@ Tạo skeleton của toàn bộ project. Đây là nền tảng cho mọi thứ 
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 pnpm install
 # Không có lỗi dependency
@@ -73,11 +76,13 @@ pnpm turbo run build --dry
 Tạo `tsconfig` base dùng chung, các app và package chỉ cần extend lại, tránh lặp cấu hình và đảm bảo consistency.
 
 **Việc cần làm:**
+
 - Tạo `tsconfig.base.json` ở root với strict mode đầy đủ
 - Tạo `tsconfig.json` riêng trong từng app extend từ base
 - Cấu hình path alias `@repo/*` trỏ tới `packages/*`
 
 **`tsconfig.base.json` ở root:**
+
 ```json
 {
   "compilerOptions": {
@@ -106,6 +111,7 @@ Tạo `tsconfig` base dùng chung, các app và package chỉ cần extend lại
 ```
 
 **`tsconfig.json` trong `apps/backend`:**
+
 ```json
 {
   "extends": "../../tsconfig.base.json",
@@ -122,6 +128,7 @@ Tạo `tsconfig` base dùng chung, các app và package chỉ cần extend lại
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Tạo file packages/types/src/index.ts với một type đơn giản
 # Tạo file apps/backend/src/test.ts import từ @repo/types
@@ -138,6 +145,7 @@ npx tsc --noEmit
 Chuẩn hóa code style toàn monorepo. Mỗi lần commit sẽ tự động lint và format, tránh code style loạn khi dự án lớn lên.
 
 **Việc cần làm:**
+
 - Cài `eslint`, `@typescript-eslint/parser`, `@typescript-eslint/eslint-plugin`, `eslint-config-prettier`, `prettier`
 - Tạo `.eslintrc.base.js` ở root để các app extend
 - Tạo `.prettierrc` ở root
@@ -147,6 +155,7 @@ Chuẩn hóa code style toàn monorepo. Mỗi lần commit sẽ tự động lin
 - Setup commit-msg hook chạy commitlint
 
 **`.prettierrc`:**
+
 ```json
 {
   "semi": true,
@@ -158,24 +167,22 @@ Chuẩn hóa code style toàn monorepo. Mỗi lần commit sẽ tự động lin
 ```
 
 **`.eslintrc.base.js`:**
+
 ```js
 module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier'
-  ],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
   rules: {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn'
-  }
+    '@typescript-eslint/no-explicit-any': 'warn',
+  },
 };
 ```
 
 **`lint-staged` config trong `package.json` root:**
+
 ```json
 {
   "lint-staged": {
@@ -186,6 +193,7 @@ module.exports = {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Tạo file có lỗi lint (ví dụ: var thay vì const)
 git add .
@@ -193,7 +201,7 @@ git commit -m "test"
 # Husky chặn commit, hiển thị lỗi lint
 # Thử commit với message sai format: "add feature"
 # commitlint báo lỗi
-# Commit đúng format: "feat: add base config"  
+# Commit đúng format: "feat: add base config"
 # Commit thành công
 ```
 
@@ -205,6 +213,7 @@ git commit -m "test"
 Toàn bộ services infrastructure chạy bằng một lệnh. Dev không cần cài PostgreSQL, Redis hay MinIO trên máy.
 
 **Việc cần làm:**
+
 - Tạo `docker/docker-compose.yml` cho development (có volume mount source code)
 - Tạo `docker/docker-compose.prod.yml` cho production (build image, không mount source)
 - Tạo `docker/nginx/nginx.conf` làm reverse proxy
@@ -212,6 +221,7 @@ Toàn bộ services infrastructure chạy bằng một lệnh. Dev không cần 
 - Tạo script `docker/init-db.sh` để khởi tạo DB lần đầu
 
 **`docker/docker-compose.yml`:**
+
 ```yaml
 version: '3.9'
 
@@ -273,8 +283,8 @@ services:
     container_name: app_maildev
     restart: unless-stopped
     ports:
-      - '1080:1080'   # Web UI
-      - '1025:1025'   # SMTP
+      - '1080:1080' # Web UI
+      - '1025:1025' # SMTP
 
 volumes:
   postgres_data:
@@ -283,6 +293,7 @@ volumes:
 ```
 
 **`docker/nginx/nginx.conf` (dev):**
+
 ```nginx
 upstream backend {
     server host.docker.internal:3000;
@@ -322,6 +333,7 @@ server {
 ```
 
 **`.env.example`:**
+
 ```env
 # App
 NODE_ENV=development
@@ -372,6 +384,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 cp .env.example .env
 docker compose -f docker/docker-compose.yml up -d
@@ -403,10 +416,12 @@ redis-cli -a redispassword ping
 Interface đơn giản cho mọi thao tác thường dùng. Dev mới vào project chỉ cần đọc Makefile là biết làm gì.
 
 **Việc cần làm:**
+
 - Tạo `Makefile` ở root với đầy đủ targets
 - Đảm bảo các target có comment giải thích
 
 **`Makefile`:**
+
 ```makefile
 .PHONY: help dev build test lint clean \
         db-migrate db-seed db-reset db-studio \
@@ -485,6 +500,7 @@ db-generate: ## Generate Prisma client
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 make help
 # Hiển thị bảng màu listing tất cả targets + mô tả
@@ -508,11 +524,13 @@ make nonexistent
 Tạo cấu trúc và exports cơ bản cho 4 shared packages. Chưa cần logic phức tạp, chỉ cần đủ để các app import được và TypeScript không báo lỗi.
 
 **Việc cần làm:**
+
 - Setup `package.json` cho từng package với đúng `name`, `main`, `types`
 - Tạo `src/index.ts` với exports cơ bản cho từng package
 - Đảm bảo các app có thể import `@repo/types`, `@repo/utils`, v.v.
 
 **Cấu trúc `packages/types/`:**
+
 ```
 packages/types/
 ├── package.json
@@ -525,6 +543,7 @@ packages/types/
 ```
 
 **`packages/types/src/common.ts`:**
+
 ```typescript
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -553,6 +572,7 @@ export interface PaginationQuery {
 ```
 
 **`packages/constants/src/index.ts`:**
+
 ```typescript
 export const USER_ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',
@@ -581,6 +601,7 @@ export const PAGINATION_DEFAULTS = {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Trong apps/backend/src/test-import.ts
 import { ApiResponse, PaginatedResponse } from '@repo/types';
@@ -593,3 +614,14 @@ cd apps/backend
 npx tsc --noEmit
 # Không lỗi — import shared packages hoạt động
 ```
+
+---
+
+## Checklist cập nhật (2026-05-07)
+
+- [x] Task 1.1 Monorepo scaffold (`apps/*`, `packages/*`, `turbo.json`, `pnpm-workspace.yaml`).
+- [x] Task 1.2 TypeScript base config + path aliases `@repo/*`.
+- [x] Task 1.3 ESLint/Prettier/Husky/commitlint scaffold.
+- [x] Task 1.4 Docker Compose + nginx + `.env.example` + `Makefile`.
+- [x] `pnpm install` đã chạy thành công (có warning mạng tạm thời, không chặn install).
+- [ ] `make docker-up` chưa pass do môi trường local chưa chạy Docker daemon (`docker.sock` không tồn tại).

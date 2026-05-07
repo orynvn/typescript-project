@@ -12,6 +12,7 @@
 Bootstrap NestJS với cấu hình chuẩn. Thiết lập toàn bộ global middleware, pipes, filters, interceptors ngay từ đầu để mọi module phía sau tự động được bảo vệ và chuẩn hóa.
 
 **Việc cần làm:**
+
 - Tạo NestJS app trong `apps/backend` bằng `@nestjs/cli`
 - Cài đặt dependencies core:
   ```
@@ -27,6 +28,7 @@ Bootstrap NestJS với cấu hình chuẩn. Thiết lập toàn bộ global midd
 - Cấu hình Swagger tại `/api/docs`
 
 **`apps/backend/src/main.ts`:**
+
 ```typescript
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
@@ -57,12 +59,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Global pipes, filters, interceptors
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
@@ -86,18 +90,21 @@ bootstrap();
 ```
 
 **`GlobalExceptionFilter` — response lỗi chuẩn:**
+
 ```typescript
 // Mọi lỗi đều trả về format nhất quán:
 // { success: false, message: "...", error: "BadRequestException", statusCode: 400 }
 ```
 
 **`ResponseInterceptor` — response thành công chuẩn:**
+
 ```typescript
 // Mọi response đều được bọc:
 // { success: true, data: <original response>, message: "OK" }
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 cd apps/backend && pnpm dev
 # Server khởi động tại http://localhost:3000
@@ -120,6 +127,7 @@ curl http://localhost:3000/api/nonexistent
 Thiết lập Prisma với schema cơ bản cho User, Role, Permission. Đây là model dùng chung, mọi dự án đều cần.
 
 **Việc cần làm:**
+
 - Cài `prisma` và `@prisma/client`
 - Khởi tạo Prisma với `prisma init`
 - Viết schema cơ bản: `User`, `RefreshToken`, `AuditLog`
@@ -128,6 +136,7 @@ Thiết lập Prisma với schema cơ bản cho User, Role, Permission. Đây l�
 - Tạo `prisma/seed.ts` với dữ liệu admin mặc định
 
 **`prisma/schema.prisma`:**
+
 ```prisma
 generator client {
   provider = "prisma-client-js"
@@ -201,12 +210,14 @@ model AuditLog {
 ```
 
 **`PrismaService` — kết nối và soft delete middleware:**
+
 ```typescript
 // Tự động filter deletedAt != null cho mọi query
 // Expose $transaction, $connect, $disconnect
 ```
 
 **`prisma/seed.ts`:**
+
 ```typescript
 // Tạo super admin mặc định:
 // email: admin@example.com
@@ -215,6 +226,7 @@ model AuditLog {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 make db-migrate
 # ✔ Generated Prisma Client
@@ -241,6 +253,7 @@ cd apps/backend
 Module auth hoàn chỉnh với access token ngắn hạn (15m), refresh token dài hạn (7d) lưu DB, và đăng nhập Google. Đây là tính năng mọi dự án đều cần và thường mất nhiều thời gian nhất.
 
 **Việc cần làm:**
+
 - Cài `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `passport-google-oauth20`, `bcrypt`
 - Tạo `AuthModule` với các endpoints:
   - `POST /auth/register` — đăng ký, gửi email verify
@@ -257,6 +270,7 @@ Module auth hoàn chỉnh với access token ngắn hạn (15m), refresh token d
 - Lưu refresh token vào DB, revoke khi logout hoặc đổi password
 
 **Flow token:**
+
 ```
 Login → accessToken (15m, stateless) + refreshToken (7d, lưu DB)
      → Client lưu accessToken trong memory, refreshToken trong httpOnly cookie
@@ -266,6 +280,7 @@ Login → accessToken (15m, stateless) + refreshToken (7d, lưu DB)
 ```
 
 **`@Public()` decorator — bỏ qua auth:**
+
 ```typescript
 // Dùng cho các route không cần đăng nhập
 @Public()
@@ -274,6 +289,7 @@ async login() { ... }
 ```
 
 **`@Roles()` decorator:**
+
 ```typescript
 @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
 @Get('admin-only')
@@ -281,6 +297,7 @@ async adminEndpoint() { ... }
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Đăng ký
 curl -X POST http://localhost:3000/api/auth/register \
@@ -324,6 +341,7 @@ curl http://localhost:3000/api/admin/users \
 Abstract base class cho service và controller. Mọi module mới chỉ cần extend là có đủ CRUD + pagination + search + soft delete. Đây là phần tiết kiệm thời gian nhiều nhất cho các dự án sau.
 
 **Việc cần làm:**
+
 - Tạo `BaseCrudService<T>` abstract class với generic Prisma model
 - Tạo `BaseCrudController<T>` abstract class
 - Hỗ trợ: `findAll` (pagination + search + sort), `findOne`, `create`, `update`, `delete` (soft), `restore`
@@ -331,6 +349,7 @@ Abstract base class cho service và controller. Mọi module mới chỉ cần e
 - Demo với `ProductModule` để verify pattern hoạt động
 
 **`BaseCrudService` — interface:**
+
 ```typescript
 abstract class BaseCrudService<T, CreateDto, UpdateDto> {
   abstract findAll(query: PaginationQuery): Promise<PaginatedResponse<T>>;
@@ -343,6 +362,7 @@ abstract class BaseCrudService<T, CreateDto, UpdateDto> {
 ```
 
 **Cách sử dụng trong dự án thực:**
+
 ```typescript
 // Chỉ cần viết thêm vài dòng là có CRUD hoàn chỉnh
 @Injectable()
@@ -355,6 +375,7 @@ export class PostsService extends BaseCrudService<Post, CreatePostDto, UpdatePos
 ```
 
 **`PaginationDto`:**
+
 ```typescript
 class PaginationDto {
   @IsOptional() @IsInt() @Min(1) page?: number = 1;
@@ -366,6 +387,7 @@ class PaginationDto {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Tạo ProductModule extend BaseCrudService với schema:
 # model Product { id, name, price, description, createdAt, deletedAt }
@@ -399,6 +421,7 @@ curl -X POST http://localhost:3000/api/products/<id>/restore
 Upload file với validation type/size, lưu vào MinIO (dev) hoặc S3 (prod), đồng thời LUÔN tạo record `MediaFile` trong DB. Đây là single entry point cho mọi luồng upload (FileUpload, Tiptap, Media Library).
 
 **Việc cần làm:**
+
 - Cài `@nestjs/platform-express`, `multer`, `minio`, `sharp`
 - Tạo `StorageModule` (global) với provider pattern: `LocalStorage` hoặc `MinioStorage`
 - Tạo `UploadModule` với endpoint:
@@ -413,6 +436,7 @@ Upload file với validation type/size, lưu vào MinIO (dev) hoặc S3 (prod), 
 - Trả về payload chuẩn hóa: `id`, `url`, `key`, `name`, `size`, `mimeType`, `width?`, `height?`
 
 **Storage interface:**
+
 ```typescript
 interface IStorageProvider {
   upload(file: Express.Multer.File, folder: string): Promise<UploadResult>;
@@ -421,7 +445,7 @@ interface IStorageProvider {
 }
 
 interface UploadResult {
-  id: string;        // MediaFile.id
+  id: string; // MediaFile.id
   key: string;
   url: string;
   name: string;
@@ -433,6 +457,7 @@ interface UploadResult {
 ```
 
 **Flow upload ảnh:**
+
 ```
 Client upload → Multer (buffer, max 10MB)
              → Validate MIME type (image/jpeg, image/png, image/webp)
@@ -444,6 +469,7 @@ Client upload → Multer (buffer, max 10MB)
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Upload ảnh
 curl -X POST http://localhost:3000/api/upload/image \
@@ -480,6 +506,7 @@ curl http://localhost:3000/api/media/status
 Gửi email qua queue (Bull + Redis) để không block request. Template dùng Handlebars. Dev dùng Maildev để preview không cần SMTP thật.
 
 **Việc cần làm:**
+
 - Cài `@nestjs/bull`, `bull`, `nodemailer`, `handlebars`
 - Tạo `MailModule` với `MailQueue` processor
 - Tạo các email template trong `templates/`:
@@ -492,6 +519,7 @@ Gửi email qua queue (Bull + Redis) để không block request. Template dùng 
 - Log kết quả vào DB hoặc console
 
 **`MailService` interface:**
+
 ```typescript
 class MailService {
   sendWelcome(to: string, name: string): Promise<void>;
@@ -503,6 +531,7 @@ class MailService {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Đăng ký user mới → email welcome được gửi
 curl -X POST http://localhost:3000/api/auth/register \
@@ -532,6 +561,7 @@ docker start app_maildev
 Bảo vệ API khỏi abuse và ghi log đầy đủ để debug production. Setup một lần, dùng mãi.
 
 **Việc cần làm:**
+
 - Cấu hình `ThrottlerModule` (rate limiting):
   - Global: 100 requests / 60 giây / IP
   - Auth endpoints: 10 requests / 60 giây / IP (strict hơn)
@@ -543,6 +573,7 @@ Bảo vệ API khỏi abuse và ghi log đầy đủ để debug production. Set
 - Thêm `X-Request-ID` header vào mọi response
 
 **Log format production:**
+
 ```json
 {
   "timestamp": "2024-01-01T00:00:00.000Z",
@@ -556,6 +587,7 @@ Bảo vệ API khỏi abuse và ghi log đầy đủ để debug production. Set
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Test rate limit trên auth endpoint
 for i in {1..15}; do
@@ -577,3 +609,21 @@ cat apps/backend/logs/combined.log | tail -5
 # Test audit log
 # Xóa một resource → AuditLog table có record với action: "DELETE"
 ```
+
+---
+
+## Checklist cập nhật (2026-05-07)
+
+- [x] Task 2.1 NestJS bootstrap (`main.ts`, global filter/interceptor, swagger setup).
+- [x] Task 2.2 Prisma schema + seed cơ bản (`User`, `RefreshToken`, `AuditLog`, `MediaFile`).
+- [x] Task 2.3 Auth foundation (`/auth/login`, `/auth/me`, JWT strategy/guard scaffold).
+- [x] Task 2.5 Upload foundation theo single-entry architecture:
+  - [x] `POST /upload/image`
+  - [x] `POST /upload/file`
+  - [x] `DELETE /upload/:key`
+  - [x] `GET /media/status`
+  - [x] `UploadResult` export từ `@repo/types`
+  - [x] `MediaFile` thuộc core Prisma schema
+- [x] Task 2.6 Mail module scaffold.
+- [x] Task 2.7 Security/throttler/logging foundation scaffold.
+- [ ] Chưa chạy migrate/seed/runtime smoke test backend end-to-end.
