@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: setup install docker-up docker-down dev lint typecheck db-migrate db-seed
+.PHONY: setup install docker-up docker-down dev lint typecheck db-migrate db-seed new-project
 
 setup: install docker-up
 	@echo "Setup complete"
@@ -28,3 +28,6 @@ db-migrate:
 
 db-seed:
 	cd apps/backend && pnpm prisma:seed
+
+new-project:
+	@scripts/create-project.sh "$(NAME)"

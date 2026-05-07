@@ -12,6 +12,7 @@
 Đây là lý do tồn tại của cả template này. Khi bắt đầu dự án mới, chạy một lệnh duy nhất là xong — không còn copy-paste, không còn quên sửa tên app, không còn bỏ sót `.env`.
 
 **Việc cần làm:**
+
 - Tạo script `scripts/create-project.sh` (hoặc `scripts/create-project.ts` dùng `tsx`)
 - Script nhận argument: tên project, tùy chọn bỏ qua module nào
 - Tự động thực hiện:
@@ -23,6 +24,7 @@
   6. In checklist các bước tiếp theo
 
 **`scripts/create-project.sh`:**
+
 ```bash
 #!/bin/bash
 set -e
@@ -72,12 +74,14 @@ echo "  Đọc README.md để biết thêm chi tiết."
 ```
 
 **Thêm target vào Makefile:**
+
 ```makefile
 new-project: ## Tạo project mới từ template: make new-project NAME="my-app"
 	@scripts/create-project.sh "$(NAME)"
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Từ thư mục template
 make new-project NAME="coffee-shop"
@@ -113,6 +117,7 @@ cat .env | grep APP_NAME
 Cấu hình Docker cho production trên VPS: multi-stage build nhỏ gọn, Nginx TLS termination, health checks, resource limits, tự động restart.
 
 **Việc cần làm:**
+
 - Tạo `Dockerfile` multi-stage cho từng app (backend, admin, web)
 - Tạo `docker/docker-compose.prod.yml` kết hợp tất cả services
 - Cấu hình Nginx production với HTTPS (Let's Encrypt / Certbot)
@@ -122,6 +127,7 @@ Cấu hình Docker cho production trên VPS: multi-stage build nhỏ gọn, Ngin
 - Tạo `scripts/backup-db.sh` backup PostgreSQL tự động
 
 **`apps/backend/Dockerfile` (multi-stage):**
+
 ```dockerfile
 # Stage 1: Dependencies
 FROM node:20-alpine AS deps
@@ -158,6 +164,7 @@ CMD ["node", "dist/main.js"]
 ```
 
 **`docker/docker-compose.prod.yml` (excerpt):**
+
 ```yaml
 version: '3.9'
 
@@ -239,6 +246,7 @@ networks:
 ```
 
 **`scripts/deploy.sh` (chạy trên VPS):**
+
 ```bash
 #!/bin/bash
 set -e
@@ -261,6 +269,7 @@ docker compose -f docker/docker-compose.prod.yml ps
 ```
 
 **`scripts/backup-db.sh`:**
+
 ```bash
 #!/bin/bash
 # Chạy qua cron: 0 2 * * * /path/to/backup-db.sh
@@ -278,6 +287,7 @@ echo "✅ Backup: $BACKUP_DIR/backup_$DATE.sql.gz"
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Build production images locally
 docker compose -f docker/docker-compose.prod.yml build
@@ -314,6 +324,7 @@ ls /var/backups/postgres/ | grep .sql.gz
 Pipeline tự động: push code → lint/test → build Docker images → deploy lên VPS. Không còn deploy thủ công, không còn "works on my machine".
 
 **Việc cần làm:**
+
 - Tạo `.github/workflows/ci.yml` — chạy khi push/PR:
   - Lint toàn bộ code
   - Type-check
@@ -328,6 +339,7 @@ Pipeline tự động: push code → lint/test → build Docker images → deplo
 - Setup GitHub Secrets cần thiết
 
 **`.github/workflows/ci.yml`:**
+
 ```yaml
 name: CI
 
@@ -379,6 +391,7 @@ jobs:
 ```
 
 **`.github/workflows/deploy.yml`:**
+
 ```yaml
 name: Deploy
 
@@ -411,7 +424,7 @@ jobs:
             docker compose -f docker/docker-compose.prod.yml up -d --remove-orphans
             docker compose -f docker/docker-compose.prod.yml exec -T backend \
               npx prisma migrate deploy
-            
+
             # Health check
             sleep 10
             curl -f http://localhost/api/health || exit 1
@@ -419,6 +432,7 @@ jobs:
 ```
 
 **GitHub Secrets cần setup:**
+
 ```
 GHCR_TOKEN         → GitHub Personal Access Token (write:packages)
 VPS_HOST           → IP hoặc domain VPS
@@ -427,6 +441,7 @@ VPS_SSH_KEY        → Private SSH key
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Push code có lỗi lint lên branch develop
 # → CI workflow chạy → job "lint-and-type-check" fail
@@ -456,6 +471,7 @@ VPS_SSH_KEY        → Private SSH key
 Setup cấu trúc test cơ bản đủ để CI chạy được và làm gương cho các test sau. Không cần đạt 100% coverage ngay, nhưng cần có pattern chuẩn.
 
 **Việc cần làm:**
+
 - Backend: setup Jest + `@nestjs/testing`
   - Unit test: `AuthService`, `UserService`, `BaseCrudService`
   - Integration test: auth endpoints (dùng test DB)
@@ -466,6 +482,7 @@ Setup cấu trúc test cơ bản đủ để CI chạy được và làm gương
 - Tạo `test/setup.ts` cho từng app
 
 **Backend unit test mẫu:**
+
 ```typescript
 // apps/backend/src/auth/auth.service.spec.ts
 describe('AuthService', () => {
@@ -494,6 +511,7 @@ describe('AuthService', () => {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Chạy tất cả tests
 make test
@@ -521,6 +539,7 @@ cd apps/backend && pnpm test:cov
 README là mặt tiền của template. Người dùng mới (kể cả bản thân 6 tháng sau) phải đọc 10 phút là biết làm gì. Không có gì tệ hơn một template không có hướng dẫn.
 
 **Việc cần làm:**
+
 - Viết `README.md` đầy đủ ở root
 - Viết `SETUP.md` — hướng dẫn deploy lên VPS từng bước
 - Tạo `docs/` folder:
@@ -530,44 +549,56 @@ README là mặt tiền của template. Người dùng mới (kể cả bản th
 - Cập nhật mỗi `apps/*/README.md` với hướng dẫn riêng
 
 **Cấu trúc `README.md`:**
+
 ```markdown
 # TypeScript Fullstack Template
 
 > Clone. Config. Ship. ⚡
 
 ## ✨ Features
+
 [danh sách feature nổi bật]
 
 ## 🏗️ Tech Stack
+
 [bảng: Backend / Frontend / Infrastructure]
 
 ## 🚀 Quick Start (5 phút)
+
 [5 lệnh từ zero đến chạy được]
 
 ## 📁 Project Structure
+
 [cây thư mục có giải thích]
 
 ## 🔧 Configuration
+
 [link tới docs/environment-variables.md]
 
 ## 📖 Documentation
+
 [links tới từng doc]
 
 ## 🤝 Creating a New Project
+
 [hướng dẫn dùng create-project script]
 
 ## 📦 Adding a New Module
+
 [link tới docs/adding-a-module.md]
 
 ## 🚢 Deployment
+
 [link tới SETUP.md]
 ```
 
 **`docs/adding-a-module.md` — ví dụ thêm module "Posts":**
+
 ```markdown
 ## Thêm module mới trong 15 phút
 
 ### 1. Backend (5 phút)
+
 - Thêm model vào prisma/schema.prisma
 - Chạy: make db-migrate
 - Tạo module: nest g module posts
@@ -575,17 +606,20 @@ README là mặt tiền của template. Người dùng mới (kể cả bản th
 - Thêm vào AppModule
 
 ### 2. Admin Frontend (5 phút)
+
 - Copy apps/admin/src/app/(dashboard)/users/
 - Rename thành posts/
 - Cập nhật columns definition
 - Thêm vào nav-items.config.ts
 
 ### 3. Types (2 phút)
+
 - Thêm Post interface vào packages/types/src/
 - Export từ index.ts
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Nhờ người khác (hoặc giả vờ là người mới) làm theo README
 
@@ -644,3 +678,26 @@ Tái sử dụng
 ☑ Không còn chữ "myapp" trong project mới
 ☑ make dev trong project mới → chạy được không cần sửa gì thêm
 ```
+
+---
+
+## Checklist cập nhật (2026-05-07)
+
+- [x] Task 5.1 Script khởi tạo project mới:
+  - [x] `scripts/create-project.sh`
+  - [x] `Makefile` target `new-project`
+- [x] Task 5.2 Production Docker scaffold:
+  - [x] `apps/backend/Dockerfile`
+  - [x] `apps/admin/Dockerfile`
+  - [x] `apps/web/Dockerfile`
+  - [x] `docker/nginx/nginx.prod.conf`
+  - [x] `docker/.dockerignore`
+  - [x] `scripts/deploy.sh`
+  - [x] `scripts/backup-db.sh`
+- [x] Task 5.3 GitHub Actions CI/CD scaffold:
+  - [x] `ci.yml` (đã có từ phase trước, pass)
+  - [x] `deploy.yml` (build + deploy placeholder)
+- [x] Test đã chạy:
+  - [x] `pnpm lint` pass.
+  - [x] `pnpm typecheck` pass.
+- [ ] Theo chỉ đạo hiện tại: không chạy `pnpm install` full ở phase này; sẽ chạy một lần sau Phase 9.
