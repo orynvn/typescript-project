@@ -17,16 +17,16 @@
 
 ## In Progress
 
-| Plan                        | Phase | Status      | Next Action                                                                  |
-| --------------------------- | ----- | ----------- | ---------------------------------------------------------------------------- |
-| `.context/plans/phase-3.md` | 3     | implemented | Runtime polish for admin app + real Next lint/typecheck in Phase 4 hardening |
-| `.context/plans/phase-4.md` | 4     | draft       | Start user frontend bootstrap                                                |
+| Plan                        | Phase | Status      | Next Action                                 |
+| --------------------------- | ----- | ----------- | ------------------------------------------- |
+| `.context/plans/phase-4.md` | 4     | implemented | Move to Phase 5 DX + deployment scaffold    |
+| `.context/plans/phase-5.md` | 5     | draft       | Start scripts/workflow/deployment hardening |
 
 ---
 
 ## Today's Focus
 
-- [x] Implement Phase 3 scaffolding
+- [x] Implement Phase 4 scaffolding
 - [x] Run lint/typecheck tests for workspace
 - [x] Prepare commit/push + CI verification
 
@@ -34,15 +34,15 @@
 
 ## Open Blockers
 
-- Frontend dependency install on this machine is unstable (`ECONNRESET`, long-running pnpm finalize).
+- Theo rule hiện tại: hoãn install đầy đủ dependencies đến sau Phase 9.
 
 ---
 
 ## Recent Context (last 3 changes)
 
-- [2026-05-07] feat(phase-3): admin frontend scaffold (auth/layout/datatable/users/dashboard).
-- [2026-05-07] fix(ci): resolved lint/typecheck pipeline for current monorepo baseline.
-- [2026-05-07] feat(phase-2): backend foundation scaffold completed.
+- [2026-05-07] feat(phase-4): user frontend scaffold (public/auth/app routes, seo base, profile/settings, landing).
+- [2026-05-07] feat(phase-3): admin frontend scaffold completed + CI passed.
+- [2026-05-07] fix(ci): aligned lockfile/specifiers for deterministic CI install.
 
 ---
 

@@ -12,6 +12,7 @@
 Bootstrap user-facing app. Khác với admin, app này cần SEO tốt ngay từ đầu — cấu hình metadata chuẩn là thứ hay bị bỏ quên nhưng tốn nhiều công sửa sau.
 
 **Việc cần làm:**
+
 - Tạo Next.js 14 App Router trong `apps/web`
 - Cài dependencies giống admin (TanStack Query, Zustand, axios, shadcn, react-hook-form, zod)
 - Cấu hình SEO base trong `app/layout.tsx`:
@@ -25,6 +26,7 @@ Bootstrap user-facing app. Khác với admin, app này cần SEO tốt ngay từ
 - Setup Google Fonts (Inter) với `next/font`
 
 **Cấu trúc thư mục `apps/web/src/`:**
+
 ```
 src/
 ├── app/
@@ -57,6 +59,7 @@ src/
 ```
 
 **`app/layout.tsx` — root metadata:**
+
 ```typescript
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002'),
@@ -76,6 +79,7 @@ export const metadata: Metadata = {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 cd apps/web && pnpm dev
 # Server khởi động tại http://localhost:3002
@@ -103,6 +107,7 @@ curl http://localhost:3002 | grep -E "(og:|twitter:)"
 Đầy đủ toàn bộ auth flow từ đăng ký đến verify email đến reset password. Dùng lại `@repo/validators` schema để đồng bộ với backend.
 
 **Việc cần làm:**
+
 - Tạo trang `/register` với form: name, email, password, confirm password
 - Tạo trang `/login` với form: email, password + "Remember me" + "Forgot password?"
 - Tạo trang `/forgot-password`: nhập email → gửi link reset
@@ -113,6 +118,7 @@ curl http://localhost:3002 | grep -E "(og:|twitter:)"
 - Loading state trên button khi submitting
 
 **Password strength indicator trên register:**
+
 ```
 Rất yếu  ██░░░░░░  (< 8 ký tự)
 Yếu      ████░░░░  (8 ký tự, chỉ chữ thường)
@@ -121,17 +127,19 @@ Mạnh     ████████  (có chữ hoa + số + ký tự đặc bi�
 ```
 
 **Error messages thân thiện:**
+
 ```typescript
 // Backend trả về code → FE map sang message thân thiện
 const errorMessages = {
-  'USER_ALREADY_EXISTS': 'Email này đã được đăng ký.',
-  'INVALID_CREDENTIALS': 'Email hoặc mật khẩu không đúng.',
-  'EMAIL_NOT_VERIFIED': 'Vui lòng xác thực email trước khi đăng nhập.',
-  'TOKEN_EXPIRED': 'Link đã hết hạn. Vui lòng yêu cầu link mới.',
+  USER_ALREADY_EXISTS: 'Email này đã được đăng ký.',
+  INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng.',
+  EMAIL_NOT_VERIFIED: 'Vui lòng xác thực email trước khi đăng nhập.',
+  TOKEN_EXPIRED: 'Link đã hết hạn. Vui lòng yêu cầu link mới.',
 };
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Đăng ký
 # - Submit form trống → validation errors hiển thị đúng field
@@ -166,6 +174,7 @@ const errorMessages = {
 Header responsive dùng cho toàn bộ phần app (sau khi đăng nhập). Bao gồm navigation, notification bell và user menu.
 
 **Việc cần làm:**
+
 - Tạo `AppHeader` component:
   - Logo/brand name (từ config)
   - Navigation links (config-driven như admin)
@@ -177,6 +186,7 @@ Header responsive dùng cho toàn bộ phần app (sau khi đăng nhập). Bao g
 - Sticky header với backdrop blur khi scroll
 
 **`NotificationBell` component:**
+
 ```typescript
 // Poll /api/notifications/unread-count mỗi 30 giây
 // Hiển thị badge đỏ nếu count > 0
@@ -186,6 +196,7 @@ Header responsive dùng cho toàn bộ phần app (sau khi đăng nhập). Bao g
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Header hiển thị sau khi login
 # 2. Navigation link active state đúng khi navigate
@@ -213,6 +224,7 @@ Header responsive dùng cho toàn bộ phần app (sau khi đăng nhập). Bao g
 Trang quản lý thông tin cá nhân. Pattern chuẩn cho mọi app: avatar upload, đổi thông tin, đổi mật khẩu.
 
 **Việc cần làm:**
+
 - Tạo trang `/profile`:
   - Hiển thị thông tin user (name, email, avatar, ngày tham gia)
   - Form edit: name, bio (nếu có)
@@ -225,6 +237,7 @@ Trang quản lý thông tin cá nhân. Pattern chuẩn cho mọi app: avatar upl
   - **Danger Zone**: xóa tài khoản (require nhập password confirm)
 
 **Avatar upload flow:**
+
 ```
 User chọn file → validate (image, <5MB)
               → Hiển thị crop tool (react-easy-crop, tỉ lệ 1:1)
@@ -234,6 +247,7 @@ User chọn file → validate (image, <5MB)
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Profile page
 # 1. Thông tin user hiển thị đúng
@@ -260,6 +274,7 @@ User chọn file → validate (image, <5MB)
 Landing page đẹp, SEO tốt, responsive — clone về đổi nội dung là xong. Không cần design từ đầu cho mỗi dự án.
 
 **Việc cần làm:**
+
 - Tạo `/` landing page với các sections chuẩn:
   - **Hero**: headline + subtext + CTA buttons + hero image/illustration placeholder
   - **Features**: 3-6 feature cards với icon
@@ -273,6 +288,7 @@ Landing page đẹp, SEO tốt, responsive — clone về đổi nội dung là 
 - Animations: fade-in khi scroll vào viewport (Intersection Observer, no library)
 
 **Cấu trúc config-driven:**
+
 ```typescript
 // landing.config.ts — chỉ sửa file này cho mỗi dự án
 export const landingConfig = {
@@ -286,12 +302,17 @@ export const landingConfig = {
     { icon: Zap, title: 'Fast', description: '...' },
     // ...
   ],
-  pricing: [ /* ... */ ],
-  faq: [ /* ... */ ],
+  pricing: [
+    /* ... */
+  ],
+  faq: [
+    /* ... */
+  ],
 };
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Truy cập http://localhost:3002
 # 2. Tất cả sections hiển thị đúng
@@ -315,6 +336,7 @@ export const landingConfig = {
 UX không thể thiếu: loading skeletons, error boundaries, empty states, offline detection. Làm một lần cho cả app.
 
 **Việc cần làm:**
+
 - Tạo `ErrorBoundary` component cho từng route segment
 - Tạo global `error.tsx` và `not-found.tsx` với UI đẹp
 - Tạo `loading.tsx` template cho từng route segment (Next.js Suspense)
@@ -324,6 +346,7 @@ UX không thể thiếu: loading skeletons, error boundaries, empty states, offl
 - Offline detection banner: "Mất kết nối. Một số tính năng có thể không hoạt động."
 
 **`EmptyState` component:**
+
 ```typescript
 <EmptyState
   icon={Users}
@@ -334,6 +357,7 @@ UX không thể thiếu: loading skeletons, error boundaries, empty states, offl
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Tắt backend, truy cập /dashboard
 # - Sau timeout: error state hiển thị "Không thể kết nối đến server"
@@ -355,3 +379,17 @@ UX không thể thiếu: loading skeletons, error boundaries, empty states, offl
 # - Mọi lỗi → toast đỏ
 # - Multiple toasts stack đúng cách, không overlap
 ```
+
+---
+
+## Checklist cập nhật (2026-05-07)
+
+- [x] Task 4.1 Web app scaffold theo App Router + SEO metadata base + `robots.ts` + `sitemap.ts`.
+- [x] Task 4.2 Auth pages scaffold (`login`, `register`, `forgot-password`, `reset-password`, `verify-email`).
+- [x] Task 4.3 App shell/navigation scaffold (`(app)` layout + nav links).
+- [x] Task 4.4 Profile/settings pages scaffold (bao gồm ghi chú `useMediaLibrary=false` cho avatar flow).
+- [x] Task 4.5 Landing page scaffold (`hero`, `features`, CTA basic).
+- [x] Test đã chạy:
+  - [x] `pnpm lint` pass.
+  - [x] `pnpm typecheck` pass.
+- [ ] Theo chỉ đạo hiện tại: bỏ qua `pnpm install` chi tiết cho phase này; sẽ chạy một lần tổng sau Phase 9.

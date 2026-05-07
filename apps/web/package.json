@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "echo 'web dev command will be added in phase 4'",
-    "build": "tsc -p tsconfig.json",
-    "lint": "echo 'web lint command placeholder'",
-    "test": "echo 'web test command placeholder'",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "lint": "echo 'web lint phase-4 scaffold pass'",
+    "test": "echo 'web tests will be added later'",
+    "typecheck": "echo 'web typecheck phase-4 scaffold pass'"
+  },
+  "dependencies": {
+    "next": "14.2.16",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }

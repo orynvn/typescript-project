@@ -6,8 +6,15 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "preserve",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "allowJs": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["next-env.d.ts", "src/**/*", ".next/types/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
