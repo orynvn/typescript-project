@@ -6,3 +6,4 @@
 <!-- Add new entries at the end of this file. Copilot will append automatically. -->
 
 [YYYY-MM-DD] chore: Initial project setup from copilot-workspace-setup template
+[2026-05-07] feat(infra): scaffold phase-1 monorepo + tsconfig + lint hooks + docker + makefile

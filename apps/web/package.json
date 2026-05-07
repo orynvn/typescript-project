@@ -1,0 +1,12 @@
+{
+  "name": "@apps/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'web dev command will be added in phase 4'",
+    "build": "tsc -p tsconfig.json",
+    "lint": "echo 'web lint command placeholder'",
+    "test": "echo 'web test command placeholder'",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

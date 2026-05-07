@@ -1,0 +1,12 @@
+{
+  "name": "@apps/admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'admin dev command will be added in phase 3'",
+    "build": "tsc -p tsconfig.json",
+    "lint": "echo 'admin lint command placeholder'",
+    "test": "echo 'admin test command placeholder'",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

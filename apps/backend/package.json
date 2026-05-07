@@ -1,0 +1,12 @@
+{
+  "name": "@apps/backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'backend dev command will be added in phase 2'",
+    "build": "tsc -p tsconfig.json",
+    "lint": "echo 'backend lint command placeholder'",
+    "test": "echo 'backend test command placeholder'",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}
