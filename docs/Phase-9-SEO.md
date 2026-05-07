@@ -45,16 +45,16 @@
 
 ## Thứ tự ưu tiên
 
-| Priority | Task | Mô tả ngắn |
-|----------|------|-----------|
-| 🔴 P1 | **9.1** SEO Settings — Backend + DB | Nền tảng cho mọi thứ phía sau |
-| 🔴 P1 | **9.2** SEO Settings — Admin UI | Form cấu hình đầy đủ cho admin |
-| 🔴 P1 | **9.3** Metadata Pipeline — User Frontend | `generateMetadata()` dynamic mọi trang |
-| 🟡 P2 | **9.4** Robots.txt + Sitemap động | Crawl đúng trang, index đúng nội dung |
-| 🟡 P2 | **9.5** Structured Data (JSON-LD) | Rich snippets trên Google |
-| 🟡 P2 | **9.6** OG Image động với `next/og` | Social sharing đẹp tự động |
-| 🟢 P3 | **9.7** Analytics Integration | GA4, GTM, Facebook Pixel qua Admin |
-| 🟢 P3 | **9.8** SEO Audit Dashboard | Kiểm tra điểm SEO từng trang ngay trong Admin |
+| Priority | Task                                      | Mô tả ngắn                                    |
+| -------- | ----------------------------------------- | --------------------------------------------- |
+| 🔴 P1    | **9.1** SEO Settings — Backend + DB       | Nền tảng cho mọi thứ phía sau                 |
+| 🔴 P1    | **9.2** SEO Settings — Admin UI           | Form cấu hình đầy đủ cho admin                |
+| 🔴 P1    | **9.3** Metadata Pipeline — User Frontend | `generateMetadata()` dynamic mọi trang        |
+| 🟡 P2    | **9.4** Robots.txt + Sitemap động         | Crawl đúng trang, index đúng nội dung         |
+| 🟡 P2    | **9.5** Structured Data (JSON-LD)         | Rich snippets trên Google                     |
+| 🟡 P2    | **9.6** OG Image động với `next/og`       | Social sharing đẹp tự động                    |
+| 🟢 P3    | **9.7** Analytics Integration             | GA4, GTM, Facebook Pixel qua Admin            |
+| 🟢 P3    | **9.8** SEO Audit Dashboard               | Kiểm tra điểm SEO từng trang ngay trong Admin |
 
 ---
 
@@ -64,6 +64,7 @@
 Tạo data model và API cho toàn bộ cấu hình SEO. Dùng cấu trúc key-value linh hoạt để không cần migration khi thêm setting mới. Cache Redis để user frontend không query DB mỗi request.
 
 **Việc cần làm:**
+
 - Thêm Prisma model `SeoSettings`
 - Tạo `SeoModule` với CRUD endpoints
 - Cache settings trong Redis (TTL 1 giờ, invalidate khi admin save)
@@ -72,6 +73,7 @@ Tạo data model và API cho toàn bộ cấu hình SEO. Dùng cấu trúc key-v
 - Seed dữ liệu default khi khởi tạo project
 
 **Prisma model:**
+
 ```prisma
 model SeoSettings {
   id        String   @id @default(cuid())
@@ -87,55 +89,60 @@ model SeoSettings {
 ```
 
 **Cấu trúc settings theo groups:**
+
 ```typescript
 // Group: site — thông tin cơ bản
 export const SITE_SEO_DEFAULTS = {
-  'site.name':        { value: 'MyApp', label: 'Tên website' },
-  'site.tagline':     { value: 'The best solution', label: 'Tagline' },
-  'site.url':         { value: 'https://myapp.com', label: 'URL gốc' },
-  'site.language':    { value: 'vi', label: 'Ngôn ngữ chính' },
-  'site.favicon':     { value: '', label: 'Favicon URL' },
-  'site.logo':        { value: '', label: 'Logo URL' },
+  'site.name': { value: 'MyApp', label: 'Tên website' },
+  'site.tagline': { value: 'The best solution', label: 'Tagline' },
+  'site.url': { value: 'https://myapp.com', label: 'URL gốc' },
+  'site.language': { value: 'vi', label: 'Ngôn ngữ chính' },
+  'site.favicon': { value: '', label: 'Favicon URL' },
+  'site.logo': { value: '', label: 'Logo URL' },
 };
 
 // Group: meta — metadata mặc định
 export const META_SEO_DEFAULTS = {
-  'meta.title.template':   { value: '%s | MyApp', label: 'Template title (dùng %s cho tên trang)' },
-  'meta.title.default':    { value: 'MyApp — The best solution', label: 'Title mặc định (khi không có %s)' },
-  'meta.description':      { value: 'Default description...', label: 'Description mặc định' },
-  'meta.keywords':         { value: 'keyword1, keyword2', label: 'Keywords mặc định' },
-  'meta.robots.default':   { value: 'index, follow', label: 'Robots mặc định' },
-  'meta.canonical.auto':   { value: 'true', label: 'Tự động tạo canonical URL' },
+  'meta.title.template': { value: '%s | MyApp', label: 'Template title (dùng %s cho tên trang)' },
+  'meta.title.default': {
+    value: 'MyApp — The best solution',
+    label: 'Title mặc định (khi không có %s)',
+  },
+  'meta.description': { value: 'Default description...', label: 'Description mặc định' },
+  'meta.keywords': { value: 'keyword1, keyword2', label: 'Keywords mặc định' },
+  'meta.robots.default': { value: 'index, follow', label: 'Robots mặc định' },
+  'meta.canonical.auto': { value: 'true', label: 'Tự động tạo canonical URL' },
 };
 
 // Group: social — Open Graph + Twitter
 export const SOCIAL_SEO_DEFAULTS = {
-  'og.image.default':      { value: '/images/og-default.png', label: 'OG Image mặc định' },
-  'og.image.width':        { value: '1200', label: 'OG Image width' },
-  'og.image.height':       { value: '630', label: 'OG Image height' },
-  'og.type.default':       { value: 'website', label: 'OG Type mặc định' },
-  'og.locale':             { value: 'vi_VN', label: 'OG Locale' },
-  'twitter.card':          { value: 'summary_large_image', label: 'Twitter Card type' },
-  'twitter.site':          { value: '@myapp', label: 'Twitter @username' },
-  'twitter.creator':       { value: '@myapp', label: 'Twitter creator @username' },
+  'og.image.default': { value: '/images/og-default.png', label: 'OG Image mặc định' },
+  'og.image.width': { value: '1200', label: 'OG Image width' },
+  'og.image.height': { value: '630', label: 'OG Image height' },
+  'og.type.default': { value: 'website', label: 'OG Type mặc định' },
+  'og.locale': { value: 'vi_VN', label: 'OG Locale' },
+  'twitter.card': { value: 'summary_large_image', label: 'Twitter Card type' },
+  'twitter.site': { value: '@myapp', label: 'Twitter @username' },
+  'twitter.creator': { value: '@myapp', label: 'Twitter creator @username' },
 };
 
 // Group: robots — crawler config
 export const ROBOTS_SEO_DEFAULTS = {
-  'robots.txt.custom':     { value: '', label: 'Nội dung robots.txt tùy chỉnh' },
-  'robots.sitemap.url':    { value: '/sitemap.xml', label: 'URL sitemap' },
-  'robots.disallow':       { value: '/admin/, /api/', label: 'Disallow paths (cách nhau bởi dấu phẩy)' },
+  'robots.txt.custom': { value: '', label: 'Nội dung robots.txt tùy chỉnh' },
+  'robots.sitemap.url': { value: '/sitemap.xml', label: 'URL sitemap' },
+  'robots.disallow': { value: '/admin/, /api/', label: 'Disallow paths (cách nhau bởi dấu phẩy)' },
 };
 
 // Group: analytics — tracking
 export const ANALYTICS_SEO_DEFAULTS = {
-  'analytics.ga4.id':      { value: '', label: 'Google Analytics 4 Measurement ID (G-XXXXXXXX)' },
-  'analytics.gtm.id':      { value: '', label: 'Google Tag Manager ID (GTM-XXXXXXX)' },
-  'analytics.fb.pixel':    { value: '', label: 'Facebook Pixel ID' },
+  'analytics.ga4.id': { value: '', label: 'Google Analytics 4 Measurement ID (G-XXXXXXXX)' },
+  'analytics.gtm.id': { value: '', label: 'Google Tag Manager ID (GTM-XXXXXXX)' },
+  'analytics.fb.pixel': { value: '', label: 'Facebook Pixel ID' },
 };
 ```
 
 **`SeoService` interface:**
+
 ```typescript
 @Injectable()
 export class SeoService {
@@ -149,10 +156,7 @@ export class SeoService {
   async get(key: string): Promise<string | null>;
 
   // Update nhiều settings cùng lúc (admin save form)
-  async updateBulk(
-    updates: Record<string, string>,
-    userId: string,
-  ): Promise<void>;
+  async updateBulk(updates: Record<string, string>, userId: string): Promise<void>;
 
   // Invalidate cache (tự động gọi sau updateBulk)
   async invalidateCache(): Promise<void>;
@@ -160,6 +164,7 @@ export class SeoService {
 ```
 
 **Cache strategy:**
+
 ```typescript
 // Cache key: seo:settings:all
 // TTL: 3600s (1 giờ)
@@ -178,6 +183,7 @@ async getAll(): Promise<Record<string, string>> {
 ```
 
 **Endpoints:**
+
 ```
 GET  /api/seo/settings           → public, tất cả settings (từ cache)
 GET  /api/seo/settings/:group    → public, settings theo group
@@ -186,6 +192,7 @@ POST  /api/seo/settings/reset    → SUPER_ADMIN only, reset về default
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Seed chạy → DB có đủ tất cả default settings
 make db-seed
@@ -219,6 +226,7 @@ curl http://localhost:3000/api/seo/settings | jq '."site.name"'
 Trang cấu hình SEO trong admin với form đầy đủ, preview live, và per-page override. Admin không cần biết code để tối ưu SEO cho từng trang.
 
 **Việc cần làm:**
+
 - Tạo trang `/admin/settings/seo` với tabs theo group
 - Live preview SERP (Google search result) khi gõ title/description
 - Live preview OG Card (Facebook/LinkedIn share) khi chỉnh OG image
@@ -228,6 +236,7 @@ Trang cấu hình SEO trong admin với form đầy đủ, preview live, và per
 - Nút "Preview trang người dùng" mở tab mới đến web frontend
 
 **Layout trang `/admin/settings/seo`:**
+
 ```
 /admin/settings/seo
 
@@ -242,6 +251,7 @@ Trang cấu hình SEO trong admin với form đầy đủ, preview live, và per
 ```
 
 **Tab 1: Site Identity**
+
 ```typescript
 // Fields:
 // - Tên website (text)
@@ -253,6 +263,7 @@ Trang cấu hình SEO trong admin với form đầy đủ, preview live, và per
 ```
 
 **Tab 2: Metadata + SERP Preview**
+
 ```
 Fields:                          │  Google Preview
 ─────────────────────────────    │  ─────────────────────────────
@@ -271,6 +282,7 @@ Robots:   [index, follow    ▼ ]
 ```
 
 **Tab 3: Social (OG + Twitter) + OG Preview**
+
 ```
 Fields:                          │  Facebook Preview
 ─────────────────────────────    │  ─────────────────────────────
@@ -288,6 +300,7 @@ Twitter @username:
 ```
 
 **Tab 4: Per-page SEO Override**
+
 ```
 Cho phép admin ghi đè SEO cho từng route cụ thể.
 
@@ -310,6 +323,7 @@ Modal "Sửa route /about":
 ```
 
 **Tab 5: Robots.txt Editor**
+
 ```typescript
 // Textarea với monospace font
 // Hiển thị nội dung hiện tại của robots.txt
@@ -329,6 +343,7 @@ Sitemap: https://myapp.com/sitemap.xml
 ```
 
 **Tab 6: Sitemap Config**
+
 ```
 Auto-generate sitemap từ routes đã đăng ký.
 
@@ -350,6 +365,7 @@ Routes trong sitemap:
 ```
 
 **Tab 7: Analytics**
+
 ```typescript
 // Simple form với input fields + hướng dẫn
 // GA4:
@@ -358,6 +374,49 @@ Routes trong sitemap:
 //   Status: ● Đang hoạt động (nếu ID hợp lệ)
 
 // GTM:
+
+---
+
+## Implementation Status (2026-05-07)
+
+```
+
+☑ 9.1 Backend SEO settings baseline
+
+- Added Prisma model: SeoSettings
+- Added SEO module endpoints:
+  GET /api/seo/settings
+  GET /api/seo/settings/:group
+  PATCH /api/seo/settings (ADMIN/SUPER_ADMIN)
+  POST /api/seo/settings/reset (SUPER_ADMIN)
+- Added defaults bootstrap + cache TTL in SeoService
+- Added seed defaults
+
+☑ 9.2 Admin SEO settings page baseline
+
+- Added /settings/seo UI with group tabs
+- Added save/reset actions and basic SERP/OG preview
+
+☑ 9.3 Metadata pipeline baseline in web
+
+- Added dynamic metadata generation from SEO settings endpoint
+
+☑ 9.4 Robots/Sitemap dynamic baseline
+
+- robots.ts and sitemap.ts read SEO settings dynamically
+
+☑ 9.5 Structured Data baseline
+
+- Added JSON-LD WebSite script in root layout
+
+☑ 9.6 OG image baseline
+
+- Added dynamic OG route: /og?title=...
+
+☐ 9.7 Analytics script injection deferred (settings keys prepared)
+☐ 9.8 SEO audit dashboard deferred
+
+```
 //   Container ID: [GTM-XXXXXXX     ]
 //   [Hướng dẫn tạo container ↗]
 
@@ -369,6 +428,7 @@ Routes trong sitemap:
 ```
 
 **DB model cho Per-page overrides:**
+
 ```prisma
 model SeoPageOverride {
   id          String   @id @default(cuid())
@@ -387,6 +447,7 @@ model SeoPageOverride {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Truy cập /admin/settings/seo
 # → 7 tabs hiển thị đúng
@@ -418,6 +479,7 @@ model SeoPageOverride {
 Hệ thống `generateMetadata()` thông minh cho mọi trang: fetch settings từ backend, merge với per-page data, áp dụng đúng thứ tự ưu tiên. Trang nào cũng có metadata đầy đủ mà không cần viết lại từ đầu.
 
 **Việc cần làm:**
+
 - Tạo `seo.config.ts` — helper functions cho metadata
 - Tạo `useSeoSettings()` hook — fetch và cache settings (TanStack Query, staleTime 1h)
 - Implement `generateMetadata()` cho từng loại trang
@@ -428,6 +490,7 @@ Hệ thống `generateMetadata()` thông minh cho mọi trang: fetch settings t�
   4. Hardcode fallback trong code
 
 **`lib/seo.config.ts` — helper functions:**
+
 ```typescript
 import type { Metadata } from 'next';
 
@@ -436,7 +499,7 @@ export async function getSeoSettings(): Promise<SeoSettings> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/seo/settings`, {
     next: { revalidate: 3600 }, // Next.js cache 1 giờ, ISR tự revalidate
   });
-  return res.json().then(r => r.data);
+  return res.json().then((r) => r.data);
 }
 
 // Fetch per-page override
@@ -446,7 +509,7 @@ export async function getPageOverride(route: string): Promise<SeoPageOverride | 
     { next: { revalidate: 3600 } },
   );
   if (!res.ok) return null;
-  return res.json().then(r => r.data);
+  return res.json().then((r) => r.data);
 }
 
 // Build metadata object với đúng thứ tự ưu tiên
@@ -465,22 +528,26 @@ export function buildMetadata(params: {
   const { settings, override, page } = params;
 
   // Thứ tự ưu tiên: override > page > settings > fallback
-  const title       = override?.title       || page?.title       || settings['meta.title.default']       || 'MyApp';
-  const description = override?.description || page?.description || settings['meta.description']         || '';
-  const ogImage     = override?.ogImage     || page?.image       || settings['og.image.default']         || '';
-  const robots      = override?.robots      || (page?.noindex ? 'noindex,nofollow' : null)
-                      || settings['meta.robots.default']     || 'index,follow';
-  const canonical   = override?.canonical   || page?.canonical;
+  const title = override?.title || page?.title || settings['meta.title.default'] || 'MyApp';
+  const description =
+    override?.description || page?.description || settings['meta.description'] || '';
+  const ogImage = override?.ogImage || page?.image || settings['og.image.default'] || '';
+  const robots =
+    override?.robots ||
+    (page?.noindex ? 'noindex,nofollow' : null) ||
+    settings['meta.robots.default'] ||
+    'index,follow';
+  const canonical = override?.canonical || page?.canonical;
 
   const titleTemplate = settings['meta.title.template'] || '%s | MyApp';
-  const siteName      = settings['site.name']           || 'MyApp';
-  const ogLocale      = settings['og.locale']           || 'vi_VN';
-  const twitterSite   = settings['twitter.site']        || '';
-  const twitterCard   = settings['twitter.card']        || 'summary_large_image';
+  const siteName = settings['site.name'] || 'MyApp';
+  const ogLocale = settings['og.locale'] || 'vi_VN';
+  const twitterSite = settings['twitter.site'] || '';
+  const twitterCard = settings['twitter.card'] || 'summary_large_image';
 
   return {
     title: {
-      default:  title,
+      default: title,
       template: titleTemplate,
     },
     description,
@@ -493,12 +560,14 @@ export function buildMetadata(params: {
       locale: ogLocale,
       type: page?.type || 'website',
       ...(ogImage && {
-        images: [{
-          url: ogImage,
-          width:  Number(settings['og.image.width'])  || 1200,
-          height: Number(settings['og.image.height']) || 630,
-          alt: title,
-        }],
+        images: [
+          {
+            url: ogImage,
+            width: Number(settings['og.image.width']) || 1200,
+            height: Number(settings['og.image.height']) || 630,
+            alt: title,
+          },
+        ],
       }),
     },
     twitter: {
@@ -513,6 +582,7 @@ export function buildMetadata(params: {
 ```
 
 **Root layout — base metadata:**
+
 ```typescript
 // apps/web/src/app/layout.tsx
 export async function generateMetadata(): Promise<Metadata> {
@@ -531,27 +601,28 @@ export async function generateMetadata(): Promise<Metadata> {
 ```
 
 **Landing page `/` — static:**
+
 ```typescript
 // app/(public)/page.tsx
 export async function generateMetadata(): Promise<Metadata> {
-  const [settings, override] = await Promise.all([
-    getSeoSettings(),
-    getPageOverride('/'),
-  ]);
+  const [settings, override] = await Promise.all([getSeoSettings(), getPageOverride('/')]);
   return buildMetadata({ settings, override });
   // Title: dùng meta.title.default (không có %s)
 }
 ```
 
 **Blog post `/blog/[slug]` — dynamic:**
+
 ```typescript
 // app/(public)/blog/[slug]/page.tsx
-export async function generateMetadata(
-  { params }: { params: { slug: string } }
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
   const [settings, post] = await Promise.all([
     getSeoSettings(),
-    api.getPost(params.slug),   // fetch post data
+    api.getPost(params.slug), // fetch post data
   ]);
 
   if (!post) return { title: 'Bài viết không tồn tại' };
@@ -559,11 +630,11 @@ export async function generateMetadata(
   return buildMetadata({
     settings,
     page: {
-      title:       post.seoTitle       || post.title,
+      title: post.seoTitle || post.title,
       description: post.seoDescription || post.excerpt,
-      image:       post.ogImage        || post.thumbnail,
-      type:        'article',
-      canonical:   `${settings['site.url']}/blog/${params.slug}`,
+      image: post.ogImage || post.thumbnail,
+      type: 'article',
+      canonical: `${settings['site.url']}/blog/${params.slug}`,
     },
   });
   // Title sẽ là: "Tên bài viết | MyApp" (từ template)
@@ -571,27 +642,26 @@ export async function generateMetadata(
 ```
 
 **Trang product `/products/[slug]`:**
+
 ```typescript
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const [settings, product] = await Promise.all([
-    getSeoSettings(),
-    api.getProduct(params.slug),
-  ]);
+  const [settings, product] = await Promise.all([getSeoSettings(), api.getProduct(params.slug)]);
 
   return buildMetadata({
     settings,
     page: {
-      title:       product.name,
+      title: product.name,
       description: product.shortDescription,
-      image:       product.images[0]?.url,
-      type:        'product',
-      noindex:     product.status === 'DRAFT', // draft → noindex
+      image: product.images[0]?.url,
+      type: 'product',
+      noindex: product.status === 'DRAFT', // draft → noindex
     },
   });
 }
 ```
 
 **Trang auth — noindex:**
+
 ```typescript
 // app/(auth)/login/page.tsx
 export const metadata: Metadata = {
@@ -602,6 +672,7 @@ export const metadata: Metadata = {
 ```
 
 **Trang danh sách với pagination `/blog?page=2`:**
+
 ```typescript
 export async function generateMetadata({ searchParams }): Promise<Metadata> {
   const settings = await getSeoSettings();
@@ -620,6 +691,7 @@ export async function generateMetadata({ searchParams }): Promise<Metadata> {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Kiểm tra <head> trang chủ
 curl http://localhost:3002 | grep -E '(og:|twitter:|<title|<meta name="desc)'
@@ -658,6 +730,7 @@ curl "http://localhost:3002/blog?page=2" | grep -E '(robots|canonical)'
 `robots.txt` và `sitemap.xml` được generate từ DB config (do admin cấu hình ở Task 9.2). Sitemap bao gồm cả static routes và dynamic URLs (blog posts, products) từ DB.
 
 **Việc cần làm:**
+
 - `GET /robots.txt` → proxy từ backend, generate từ DB config
 - `GET /sitemap.xml` → Next.js `sitemap.ts`, merge static + dynamic URLs
 - `GET /sitemap-index.xml` → chia nhỏ nếu > 5000 URLs (sitemap index)
@@ -665,6 +738,7 @@ curl "http://localhost:3002/blog?page=2" | grep -E '(robots|canonical)'
 - Cache sitemap 24h, invalidate khi có content mới
 
 **`apps/web/src/app/robots.ts`:**
+
 ```typescript
 import type { MetadataRoute } from 'next';
 
@@ -675,7 +749,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   // Parse disallow paths từ settings
   const disallowPaths = (settings['robots.disallow'] || '')
     .split(',')
-    .map(p => p.trim())
+    .map((p) => p.trim())
     .filter(Boolean);
 
   return {
@@ -693,22 +767,24 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
     // Custom content từ admin (nếu có)
-    ...(settings['robots.txt.custom'] && {
-      // Append custom content vào cuối
-    }),
+    ...(settings['robots.txt.custom'] &&
+      {
+        // Append custom content vào cuối
+      }),
   };
 }
 ```
 
 **`apps/web/src/app/sitemap.ts`:**
+
 ```typescript
 import type { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [settings, sitemapConfig, dynamicUrls] = await Promise.all([
     getSeoSettings(),
-    getSitemapConfig(),    // fetch config từ admin (routes include/exclude)
-    getDynamicUrls(),      // fetch từ DB: posts, products, categories...
+    getSitemapConfig(), // fetch config từ admin (routes include/exclude)
+    getDynamicUrls(), // fetch từ DB: posts, products, categories...
   ]);
 
   const siteUrl = settings['site.url'] || 'http://localhost:3002';
@@ -716,8 +792,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Static routes từ sitemap config (admin đã cấu hình)
   const staticUrls: MetadataRoute.Sitemap = sitemapConfig
-    .filter(route => route.isIncluded)
-    .map(route => ({
+    .filter((route) => route.isIncluded)
+    .map((route) => ({
       url: `${siteUrl}${route.path}`,
       lastModified: now,
       changeFrequency: route.frequency as any,
@@ -725,7 +801,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   // Dynamic URLs từ DB
-  const blogUrls: MetadataRoute.Sitemap = dynamicUrls.posts.map(post => ({
+  const blogUrls: MetadataRoute.Sitemap = dynamicUrls.posts.map((post) => ({
     url: `${siteUrl}/blog/${post.slug}`,
     lastModified: new Date(post.updatedAt),
     changeFrequency: 'weekly',
@@ -733,8 +809,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const productUrls: MetadataRoute.Sitemap = dynamicUrls.products
-    .filter(p => p.status === 'PUBLISHED')
-    .map(product => ({
+    .filter((p) => p.status === 'PUBLISHED')
+    .map((product) => ({
       url: `${siteUrl}/products/${product.slug}`,
       lastModified: new Date(product.updatedAt),
       changeFrequency: 'weekly',
@@ -747,16 +823,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 // Fetch dynamic URLs từ backend
 async function getDynamicUrls() {
   const [posts, products] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts?sitemap=true&limit=10000`,
-      { next: { revalidate: 3600 } }).then(r => r.json()),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products?sitemap=true&limit=10000`,
-      { next: { revalidate: 3600 } }).then(r => r.json()),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts?sitemap=true&limit=10000`, {
+      next: { revalidate: 3600 },
+    }).then((r) => r.json()),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products?sitemap=true&limit=10000`, {
+      next: { revalidate: 3600 },
+    }).then((r) => r.json()),
   ]);
   return { posts: posts.data || [], products: products.data || [] };
 }
 ```
 
 **Backend: Ping search engines khi sitemap update:**
+
 ```typescript
 // Trong SeoService.invalidateCache() — gọi sau khi admin update settings
 async notifySearchEngines(siteUrl: string): Promise<void> {
@@ -773,6 +852,7 @@ async notifySearchEngines(siteUrl: string): Promise<void> {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Robots.txt
 curl http://localhost:3002/robots.txt
@@ -815,12 +895,14 @@ curl http://localhost:3002/sitemap.xml | xmllint --noout -
 JSON-LD giúp Google hiểu nội dung trang và hiển thị rich snippets: breadcrumb, FAQ accordion, product rating, article date trong kết quả tìm kiếm. Implement một lần, lợi ích lâu dài.
 
 **Việc cần làm:**
+
 - Tạo `JsonLd` component generic (inject `<script type="application/ld+json">`)
 - Tạo các schema components: `OrganizationSchema`, `WebSiteSchema`, `ArticleSchema`, `ProductSchema`, `BreadcrumbSchema`, `FAQSchema`
 - Thêm vào đúng trang tương ứng
 - Validate schema với Google Rich Results Test
 
 **`components/seo/JsonLd.tsx`:**
+
 ```typescript
 // Component inject JSON-LD vào <head> an toàn
 export function JsonLd({ data }: { data: Record<string, unknown> }) {
@@ -836,6 +918,7 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
 ```
 
 **`OrganizationSchema` — trang chủ:**
+
 ```typescript
 export function OrganizationSchema({ settings }: { settings: SeoSettings }) {
   return (
@@ -864,6 +947,7 @@ export function OrganizationSchema({ settings }: { settings: SeoSettings }) {
 ```
 
 **`ArticleSchema` — trang blog post:**
+
 ```typescript
 export function ArticleSchema({ post, settings }: { post: Post; settings: SeoSettings }) {
   return (
@@ -898,6 +982,7 @@ export function ArticleSchema({ post, settings }: { post: Post; settings: SeoSet
 ```
 
 **`ProductSchema` — trang product:**
+
 ```typescript
 export function ProductSchema({ product, settings }: { product: Product; settings: SeoSettings }) {
   return (
@@ -937,6 +1022,7 @@ export function ProductSchema({ product, settings }: { product: Product; setting
 ```
 
 **`BreadcrumbSchema` — mọi trang:**
+
 ```typescript
 // Dùng cùng data với Dynamic Breadcrumb ở Phase 8.9
 export function BreadcrumbSchema({ items, siteUrl }: {
@@ -960,6 +1046,7 @@ export function BreadcrumbSchema({ items, siteUrl }: {
 ```
 
 **`FAQSchema` — trang FAQ:**
+
 ```typescript
 export function FAQSchema({ items }: {
   items: Array<{ question: string; answer: string }>;
@@ -983,6 +1070,7 @@ export function FAQSchema({ items }: {
 ```
 
 **`WebSiteSchema` — search action (sitelinks searchbox):**
+
 ```typescript
 export function WebSiteSchema({ settings }: { settings: SeoSettings }) {
   return (
@@ -1003,6 +1091,7 @@ export function WebSiteSchema({ settings }: { settings: SeoSettings }) {
 ```
 
 **Áp dụng vào các trang:**
+
 ```typescript
 // app/(public)/page.tsx — trang chủ
 export default async function HomePage() {
@@ -1038,6 +1127,7 @@ export default async function BlogPostPage({ params }) {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Kiểm tra JSON-LD trong HTML
 curl http://localhost:3002 | grep -A 50 'application/ld+json'
@@ -1080,6 +1170,7 @@ curl http://localhost:3002/blog/test | \
 Thay vì dùng một ảnh OG tĩnh cho tất cả, generate ảnh động theo nội dung: blog post tự sinh ảnh với title + thumbnail, product tự sinh với tên + giá. Social sharing trông chuyên nghiệp hơn hẳn.
 
 **Việc cần làm:**
+
 - Tạo `app/og/route.tsx` — API route generate OG image
 - 3 templates: `default`, `article`, `product`
 - Nhận params qua query string, fetch data nếu cần
@@ -1087,6 +1178,7 @@ Thay vì dùng một ảnh OG tĩnh cho tất cả, generate ảnh động theo 
 - Dùng font chữ tiếng Việt (tránh lỗi ký tự)
 
 **`app/og/route.tsx`:**
+
 ```typescript
 import { ImageResponse } from 'next/og';
 
@@ -1127,6 +1219,7 @@ export async function GET(request: Request) {
 ```
 
 **OG Templates:**
+
 ```typescript
 // Template: default (trang chủ, trang không có nội dung cụ thể)
 function DefaultTemplate({ title, description, siteName, logo }) {
@@ -1212,6 +1305,7 @@ function ProductTemplate({ title, price, image, tag, rating }) {
 ```
 
 **Áp dụng OG Image động vào metadata:**
+
 ```typescript
 // Blog post — OG image với title + thumbnail
 export async function generateMetadata({ params }) {
@@ -1220,11 +1314,14 @@ export async function generateMetadata({ params }) {
 
   return {
     openGraph: {
-      images: [{
-        url: ogImageUrl,
-        width: 1200, height: 630,
-        alt: post.title,
-      }],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
     },
   };
 }
@@ -1239,6 +1336,7 @@ export async function generateMetadata({ params }) {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Truy cập OG image endpoint trực tiếp
 open "http://localhost:3002/og?template=default&title=Test Title&desc=Description here"
@@ -1274,6 +1372,7 @@ curl -I "http://localhost:3002/og?template=default&title=Test"
 Inject GA4, GTM, Facebook Pixel từ cấu hình DB (admin bật/tắt mà không cần deploy). Dùng Partytown để chạy analytics trong web worker — không block main thread, không ảnh hưởng performance score.
 
 **Việc cần làm:**
+
 - Tạo `AnalyticsProvider` component nhận settings từ DB
 - GA4: inject `gtag.js` + `dataLayer`
 - GTM: inject `<noscript>` + script
@@ -1283,6 +1382,7 @@ Inject GA4, GTM, Facebook Pixel từ cấu hình DB (admin bật/tắt mà khôn
 - `useAnalytics()` hook để track custom events
 
 **`components/analytics/AnalyticsProvider.tsx`:**
+
 ```typescript
 'use client';
 
@@ -1305,6 +1405,7 @@ export function AnalyticsProvider({ settings }: { settings: SeoSettings }) {
 ```
 
 **`useAnalytics()` hook — track custom events:**
+
 ```typescript
 export function useAnalytics() {
   const trackEvent = useCallback((eventName: string, params?: Record<string, unknown>) => {
@@ -1338,6 +1439,7 @@ trackEvent('generate_lead', { form_name: 'contact' });
 ```
 
 **Cookie Consent Banner:**
+
 ```typescript
 // Hiển thị lần đầu nếu chưa có consent
 // Lưu vào localStorage: { analytics: true/false, marketing: true/false }
@@ -1349,6 +1451,7 @@ trackEvent('generate_lead', { form_name: 'contact' });
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Admin điền GA4 ID → Save → user frontend reload
 # → <script> GA4 xuất hiện trong source
@@ -1379,7 +1482,8 @@ trackEvent('generate_lead', { form_name: 'contact' });
 Admin kiểm tra điểm SEO từng trang ngay trong dashboard mà không cần mở Lighthouse thủ công. Gọi Lighthouse API (hoặc PageSpeed Insights API) và hiển thị kết quả trực quan.
 
 **Việc cần làm:**
-- Tạo trang `/admin/settings/seo/audit` 
+
+- Tạo trang `/admin/settings/seo/audit`
 - Tích hợp Google PageSpeed Insights API (free, không cần key cho 25k req/ngày)
 - Hiển thị scores: Performance, SEO, Accessibility, Best Practices
 - Checklist chi tiết các vấn đề cần fix
@@ -1387,6 +1491,7 @@ Admin kiểm tra điểm SEO từng trang ngay trong dashboard mà không cần 
 - Có thể audit nhiều URLs cùng lúc
 
 **`/admin/settings/seo/audit` — UI:**
+
 ```
 SEO Audit
 
@@ -1415,15 +1520,17 @@ Vấn đề cần cải thiện:
 ```
 
 **API call PageSpeed Insights:**
+
 ```typescript
 // Backend endpoint để proxy (tránh expose API key ở frontend)
 // GET /api/admin/seo/audit?url=https://myapp.com
 
 async function auditUrl(url: string): Promise<AuditResult> {
   const apiKey = process.env.GOOGLE_PAGESPEED_API_KEY; // optional
-  const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed`
-    + `?url=${encodeURIComponent(url)}&strategy=mobile`
-    + (apiKey ? `&key=${apiKey}` : '');
+  const endpoint =
+    `https://www.googleapis.com/pagespeedonline/v5/runPagespeed` +
+    `?url=${encodeURIComponent(url)}&strategy=mobile` +
+    (apiKey ? `&key=${apiKey}` : '');
 
   const res = await fetch(endpoint);
   const data = await res.json();
@@ -1431,15 +1538,16 @@ async function auditUrl(url: string): Promise<AuditResult> {
   return {
     url,
     scores: {
-      performance:    Math.round(data.lighthouseResult.categories.performance.score * 100),
-      seo:            Math.round(data.lighthouseResult.categories.seo.score * 100),
-      accessibility:  Math.round(data.lighthouseResult.categories.accessibility.score * 100),
-      bestPractices:  Math.round(data.lighthouseResult.categories['best-practices'].score * 100),
+      performance: Math.round(data.lighthouseResult.categories.performance.score * 100),
+      seo: Math.round(data.lighthouseResult.categories.seo.score * 100),
+      accessibility: Math.round(data.lighthouseResult.categories.accessibility.score * 100),
+      bestPractices: Math.round(data.lighthouseResult.categories['best-practices'].score * 100),
     },
     audits: Object.entries(data.lighthouseResult.audits)
       .filter(([_, audit]: any) => audit.score !== null && audit.score < 1)
       .map(([key, audit]: any) => ({
-        id: key, title: audit.title,
+        id: key,
+        title: audit.title,
         description: audit.description,
         score: audit.score,
         displayValue: audit.displayValue,
@@ -1451,6 +1559,7 @@ async function auditUrl(url: string): Promise<AuditResult> {
 ```
 
 **Lưu lịch sử audit:**
+
 ```prisma
 model SeoAuditLog {
   id          String   @id @default(cuid())
@@ -1468,6 +1577,7 @@ model SeoAuditLog {
 ```
 
 **Trend chart:**
+
 ```typescript
 // Mỗi URL có thể xem lịch sử điểm theo thời gian
 // Line chart: Performance / SEO / Accessibility / Best Practices
@@ -1475,6 +1585,7 @@ model SeoAuditLog {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Audit trang chủ
 # Admin → SEO → Audit → nhập https://myapp.com → Kiểm tra

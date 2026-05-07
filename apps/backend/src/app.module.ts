@@ -8,6 +8,7 @@ import { MailModule } from './mail/mail.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SeoModule } from './seo/seo.module';
 import { StorageModule } from './storage/storage.module';
 import { UploadModule } from './upload/upload.module';
 
@@ -28,6 +29,7 @@ import { UploadModule } from './upload/upload.module';
     MailModule,
     HealthModule,
     MonitoringModule,
+    SeoModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import { PrismaClient, UserRole, UserStatus } from '@prisma/client';
+import { SEO_DEFAULTS } from '../src/seo/seo.defaults';
 
 const prisma = new PrismaClient();
 
@@ -20,8 +21,16 @@ async function seed(): Promise<void> {
       name: 'Super Admin',
       role: UserRole.SUPER_ADMIN,
       status: UserStatus.ACTIVE,
-      emailVerified: true
-    }
+      emailVerified: true,
+    },
+  });
+
+  await prisma.seoSettings.createMany({
+    data: SEO_DEFAULTS.map((item) => ({
+      ...item,
+      updatedBy: 'system',
+    })),
+    skipDuplicates: true,
   });
 
   console.log(`Seed complete: created ${email}`);

@@ -1,18 +1,22 @@
 import type { Metadata } from 'next';
+import { createMetadataFromSettings, getSeoSettings } from './seo';
 
-export function createPageMetadata(title: string, description: string): Metadata {
+export async function createPageMetadata(
+  title: string,
+  fallbackDescription: string,
+): Promise<Metadata> {
+  const settings = await getSeoSettings();
+  const metadata = createMetadataFromSettings(settings, title);
   return {
-    title,
-    description,
+    ...metadata,
+    description: metadata.description ?? fallbackDescription,
     openGraph: {
-      title,
-      description,
-      type: 'website',
+      ...metadata.openGraph,
+      description: metadata.openGraph?.description ?? fallbackDescription,
     },
     twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
+      ...metadata.twitter,
+      description: metadata.twitter?.description ?? fallbackDescription,
     },
   };
 }

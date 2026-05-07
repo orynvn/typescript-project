@@ -92,6 +92,18 @@ model TwoFactorChallenge {
   @@index([userId, expiresAt])
 }
 
+model SeoSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  group     String
+  label     String
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@index([group])
+}
+
 model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @unique
