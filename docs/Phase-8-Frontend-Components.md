@@ -10,18 +10,18 @@
 
 ## Thứ tự ưu tiên
 
-| Priority | Task | Áp dụng | Lý do |
-|----------|------|---------|-------|
-| 🔴 P1 | **8.1** `useConfirm()` hook | Admin + Web | Đang dùng nhiều nơi không nhất quán — fix ngay |
-| 🔴 P1 | **8.2** File Upload Component | Admin + Web | Mọi dự án đều upload, cần component chuẩn |
-| 🔴 P1 | **8.3** Async Combobox | Admin + Web | Select + search API, lặp lại rất nhiều |
-| 🔴 P1 | **8.4** Date / Time Picker | Admin + Web | Form nào cũng có date, cần wrapper chuẩn |
-| 🟡 P2 | **8.5** Command Palette (Cmd+K) | Admin | DX cực tốt, một lần setup dùng mãi |
-| 🟡 P2 | **8.6** Rich Text Editor (Tiptap) | Admin + Web | Mô tả sản phẩm, bài viết, nội dung động |
-| 🟡 P2 | **8.7** Export CSV / Excel | Admin | User luôn yêu cầu "tải về" |
-| 🟡 P2 | **8.8** Multi-step Form | Admin + Web | Checkout, onboarding, wizard |
-| 🟢 P3 | **8.9** Dynamic Breadcrumb | Admin | UX đúng hơn khi hiển thị tên thật |
-| 🟢 P3 | **8.10** Image Component | Admin + Web | Wrapper chuẩn cho next/image |
+| Priority | Task                              | Áp dụng     | Lý do                                          |
+| -------- | --------------------------------- | ----------- | ---------------------------------------------- |
+| 🔴 P1    | **8.1** `useConfirm()` hook       | Admin + Web | Đang dùng nhiều nơi không nhất quán — fix ngay |
+| 🔴 P1    | **8.2** File Upload Component     | Admin + Web | Mọi dự án đều upload, cần component chuẩn      |
+| 🔴 P1    | **8.3** Async Combobox            | Admin + Web | Select + search API, lặp lại rất nhiều         |
+| 🔴 P1    | **8.4** Date / Time Picker        | Admin + Web | Form nào cũng có date, cần wrapper chuẩn       |
+| 🟡 P2    | **8.5** Command Palette (Cmd+K)   | Admin       | DX cực tốt, một lần setup dùng mãi             |
+| 🟡 P2    | **8.6** Rich Text Editor (Tiptap) | Admin + Web | Mô tả sản phẩm, bài viết, nội dung động        |
+| 🟡 P2    | **8.7** Export CSV / Excel        | Admin       | User luôn yêu cầu "tải về"                     |
+| 🟡 P2    | **8.8** Multi-step Form           | Admin + Web | Checkout, onboarding, wizard                   |
+| 🟢 P3    | **8.9** Dynamic Breadcrumb        | Admin       | UX đúng hơn khi hiển thị tên thật              |
+| 🟢 P3    | **8.10** Image Component          | Admin + Web | Wrapper chuẩn cho next/image                   |
 
 ---
 
@@ -33,12 +33,14 @@ Thay thế tất cả `window.confirm()` và các confirm dialog tự phát tán
 **Áp dụng cho:** `apps/admin`, `apps/web`
 
 **Việc cần làm:**
+
 - Tạo `ConfirmProvider` bọc ở root layout
 - Tạo `useConfirm` hook trả về async function
 - Component `ConfirmDialog` với các variants: `danger`, `warning`, `info`
 - Hỗ trợ custom title, description, confirm button label, loading state
 
 **`hooks/useConfirm.ts`:**
+
 ```typescript
 // API sử dụng — cực kỳ đơn giản
 const confirm = useConfirm();
@@ -58,6 +60,7 @@ const handleDelete = async (userId: string) => {
 ```
 
 **Implementation — Promise resolver pattern:**
+
 ```typescript
 type ConfirmOptions = {
   title: string;
@@ -105,6 +108,7 @@ export const useConfirm = () => useContext(ConfirmContext);
 ```
 
 **Variants:**
+
 ```
 danger  → icon Trash, nút đỏ   → dùng cho xóa, hành động không hoàn tác
 warning → icon Alert, nút vàng → dùng cho vô hiệu hóa, thay đổi quan trọng
@@ -112,6 +116,7 @@ info    → icon Info, nút xanh  → dùng cho xác nhận thông thường
 ```
 
 **Thêm vào root layout:**
+
 ```typescript
 // apps/admin/src/app/layout.tsx
 <Providers>
@@ -122,6 +127,7 @@ info    → icon Info, nút xanh  → dùng cho xác nhận thông thường
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Xóa user trong DataTable → variant "danger"
 # → Dialog đẹp xuất hiện, nút Xóa màu đỏ
@@ -149,6 +155,7 @@ Component upload đa năng: drag & drop, click to browse, multi-file, preview, p
 **Áp dụng cho:** `apps/admin`, `apps/web`
 
 **Việc cần làm:**
+
 - Tạo `FileUpload` component với 2 variants: `image` và `file`
 - Tạo `AvatarUpload` component (extends FileUpload, thêm crop)
 - Tích hợp với `POST /api/upload/image` và `POST /api/upload/file`
@@ -161,6 +168,7 @@ Component upload đa năng: drag & drop, click to browse, multi-file, preview, p
 - Cài `react-easy-crop` cho avatar crop (tỉ lệ 1:1, output 400×400 WebP)
 
 **API component:**
+
 ```typescript
 // Image upload với preview
 <FileUpload
@@ -190,14 +198,15 @@ Component upload đa năng: drag & drop, click to browse, multi-file, preview, p
 ```
 
 **File states:**
+
 ```typescript
 type FileStatus = 'idle' | 'uploading' | 'success' | 'error';
 
 type UploadFile = {
   id: string;
   file: File;
-  preview?: string;      // object URL cho ảnh
-  progress: number;      // 0–100
+  preview?: string; // object URL cho ảnh
+  progress: number; // 0–100
   status: FileStatus;
   error?: string;
   result?: UploadResult; // sau khi upload thành công
@@ -205,6 +214,7 @@ type UploadFile = {
 ```
 
 **UI States:**
+
 ```
 Idle (drop zone):
 ┌─────────────────────────────────────┐
@@ -224,6 +234,7 @@ Error:
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Drag & drop ảnh → preview ngay → progress bar → done → URL trả về
 # 2. Multi-file: upload 3 ảnh cùng lúc → progress riêng từng file
@@ -246,6 +257,7 @@ Select component với search realtime gọi API. Pattern này xuất hiện ở
 **Áp dụng cho:** `apps/admin`, `apps/web`
 
 **Việc cần làm:**
+
 - Tạo `AsyncCombobox<T>` component generic
 - Debounce search 300ms, cache kết quả bằng TanStack Query
 - Hỗ trợ: single select, multi-select, creatable (tạo option mới)
@@ -254,6 +266,7 @@ Select component với search realtime gọi API. Pattern này xuất hiện ở
 - Tích hợp với react-hook-form qua `Controller`
 
 **API component:**
+
 ```typescript
 // Single select — chọn user
 <AsyncCombobox<User>
@@ -287,6 +300,7 @@ Select component với search realtime gọi API. Pattern này xuất hiện ở
 ```
 
 **UI States:**
+
 ```
 Closed:   [Tìm người dùng...              ▼]
 
@@ -311,6 +325,7 @@ Creatable (no match):
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Gõ 3 ký tự → debounce 300ms → 1 API call (không spam)
 # 2. Arrow down/up + Enter để chọn option
@@ -318,6 +333,41 @@ Creatable (no match):
 # 4. Multi: Backspace khi input trống → xóa chip cuối
 # 5. Creatable: gõ text không có trong kết quả → xuất hiện "+ Tạo ..."
 # 6. Cache: gõ "john" → xóa → gõ lại "john" → từ cache, không fetch lại
+
+---
+
+## Implementation Status (2026-05-07)
+
+```
+
+☑ 8.1 useConfirm hook baseline in admin + web
+
+- ConfirmProvider + useConfirm + ConfirmDialog
+- Integrated usage in admin users delete flow and web settings page
+
+☑ 8.2 FileUpload baseline in admin + web
+
+- Uses UploadResult from @repo/types
+- Supports upload API integration (/api/upload/image, /api/upload/file)
+- Basic validation/progress/error states
+- Supports useMediaLibrary feature detection through GET /api/media/status
+- Added AvatarUpload baseline in admin
+
+☑ 8.3 AsyncCombobox baseline in admin
+
+- Generic async combobox with TanStack Query caching
+- Integrated demo usage in users page
+
+☑ 8.9 Dynamic breadcrumb baseline in admin header
+☑ 8.10 AppImage wrapper baseline in admin + web
+
+☐ 8.4 Date/Time Picker deferred (needs dedicated UI dependency/wrapper decision)
+☐ 8.5 Command Palette deferred
+☐ 8.6 Rich Text Editor (Tiptap + media integration) deferred to upload/media coupled phase
+☐ 8.7 Export CSV/Excel deferred
+☐ 8.8 Multi-step Form deferred
+
+```
 # 7. React Hook Form: validate required → error hiển thị dưới combobox
 ```
 
@@ -331,6 +381,7 @@ Wrapper chuẩn cho `react-day-picker` với đầy đủ variants: date only, t
 **Áp dụng cho:** `apps/admin`, `apps/web`
 
 **Việc cần làm:**
+
 - Tạo `DatePicker`, `TimePicker`, `DateTimePicker`, `DateRangePicker`
 - Locale tiếng Việt (`vi` từ `date-fns/locale`)
 - Timezone: hiển thị theo `Asia/Ho_Chi_Minh`, lưu UTC về DB
@@ -339,6 +390,7 @@ Wrapper chuẩn cho `react-day-picker` với đầy đủ variants: date only, t
 - Tích hợp react-hook-form qua `Controller`
 
 **API component:**
+
 ```typescript
 // Date only
 <DatePicker
@@ -370,6 +422,7 @@ Wrapper chuẩn cho `react-day-picker` với đầy đủ variants: date only, t
 ```
 
 **UI DateRangePicker với presets:**
+
 ```
 ┌──────────────────────────────────────────────────────┐
 │  Presets          │    Tháng 1 2025  │  Tháng 2 2025 │
@@ -384,6 +437,7 @@ Wrapper chuẩn cho `react-day-picker` với đầy đủ variants: date only, t
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. DatePicker: click → calendar → chọn ngày → value cập nhật, popup đóng
 # 2. Gõ trực tiếp: "15/01/2025" → parse đúng
@@ -404,6 +458,7 @@ Tìm kiếm nhanh, navigate, thực hiện actions bằng bàn phím. Đây là 
 **Áp dụng cho:** `apps/admin`
 
 **Việc cần làm:**
+
 - Cài `cmdk` library
 - Global shortcut: `Cmd+K` (Mac) / `Ctrl+K` (Windows/Linux)
 - Groups: Điều hướng, Hành động, Người dùng (API), Truy cập gần đây
@@ -412,27 +467,48 @@ Tìm kiếm nhanh, navigate, thực hiện actions bằng bàn phím. Đây là 
 - Recent searches lưu localStorage (tối đa 5 items)
 
 **`commands.config.ts`:**
+
 ```typescript
 export const staticCommands: Command[] = [
   // Navigation
-  { id: 'nav-dashboard', group: 'Điều hướng', label: 'Dashboard',
-    icon: LayoutDashboard, shortcut: ['G','D'],
-    action: (router) => router.push('/dashboard') },
-  { id: 'nav-users', group: 'Điều hướng', label: 'Quản lý người dùng',
-    icon: Users, action: (router) => router.push('/users') },
+  {
+    id: 'nav-dashboard',
+    group: 'Điều hướng',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    shortcut: ['G', 'D'],
+    action: (router) => router.push('/dashboard'),
+  },
+  {
+    id: 'nav-users',
+    group: 'Điều hướng',
+    label: 'Quản lý người dùng',
+    icon: Users,
+    action: (router) => router.push('/users'),
+  },
 
   // Quick Actions
-  { id: 'create-user', group: 'Hành động', label: 'Tạo người dùng mới',
-    icon: UserPlus, shortcut: ['C','U'],
-    action: () => openCreateUserModal() },
-  { id: 'toggle-theme', group: 'Hành động', label: 'Đổi giao diện tối/sáng',
-    icon: Moon, action: () => toggleTheme() },
-  { id: 'logout', group: 'Tài khoản', label: 'Đăng xuất',
-    icon: LogOut, action: () => logout() },
+  {
+    id: 'create-user',
+    group: 'Hành động',
+    label: 'Tạo người dùng mới',
+    icon: UserPlus,
+    shortcut: ['C', 'U'],
+    action: () => openCreateUserModal(),
+  },
+  {
+    id: 'toggle-theme',
+    group: 'Hành động',
+    label: 'Đổi giao diện tối/sáng',
+    icon: Moon,
+    action: () => toggleTheme(),
+  },
+  { id: 'logout', group: 'Tài khoản', label: 'Đăng xuất', icon: LogOut, action: () => logout() },
 ];
 ```
 
 **Dynamic search (static + API):**
+
 ```typescript
 // Gõ ≥ 2 ký tự → search API đồng thời filter static commands
 const { data: userResults } = useQuery({
@@ -445,6 +521,7 @@ const { data: userResults } = useQuery({
 ```
 
 **UI:**
+
 ```
 ┌──────────────────────────────────────────────────┐
 │ 🔍  Tìm kiếm...                                  │
@@ -464,6 +541,7 @@ const { data: userResults } = useQuery({
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Cmd+K → palette mở, focus vào input
 # 2. Gõ "user" → filter đúng commands
@@ -485,6 +563,7 @@ Editor WYSIWYG cho nội dung dài: mô tả sản phẩm, bài viết, email te
 **Áp dụng cho:** `apps/admin`, `apps/web`
 
 **Việc cần làm:**
+
 - Cài Tiptap + extensions cần thiết
 - Tạo `RichTextEditor` với toolbar đầy đủ
 - Tạo `RichTextDisplay` sanitize HTML trước khi render (chống XSS)
@@ -495,6 +574,7 @@ Editor WYSIWYG cho nội dung dài: mô tả sản phẩm, bài viết, email te
 - Dark mode compatible, tích hợp react-hook-form
 
 **Dependencies:**
+
 ```bash
 pnpm add @tiptap/react @tiptap/starter-kit \
   @tiptap/extension-image @tiptap/extension-link \
@@ -506,6 +586,7 @@ pnpm add @tiptap/react @tiptap/starter-kit \
 ```
 
 **API component:**
+
 ```typescript
 // Full editor (bài viết, mô tả)
 <RichTextEditor
@@ -526,12 +607,14 @@ pnpm add @tiptap/react @tiptap/starter-kit \
 ```
 
 **Toolbar:**
+
 ```
 [B] [I] [U] [~~] | [H1] [H2] [H3] | [• ] [1.] [❝] [<>] |
 [🔗] [🖼] [⊞] | [↩] [↪]              Ký tự: 245 / 10000
 ```
 
 **Upload ảnh trong editor:**
+
 ```typescript
 // Drag & drop ảnh vào editor → upload MinIO → insert <img src="...">
 // Paste từ clipboard → tương tự
@@ -540,6 +623,7 @@ pnpm add @tiptap/react @tiptap/starter-kit \
 ```
 
 **`RichTextDisplay` — render an toàn:**
+
 ```typescript
 import DOMPurify from 'dompurify';
 
@@ -560,6 +644,7 @@ export function RichTextDisplay({ content }: { content: string }) {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Toolbar hiển thị đúng, click Bold → text in đậm
 # 2. Link: chọn text → [🔗] → nhập URL → Enter → hyperlink tạo thành công
@@ -584,6 +669,7 @@ Tính năng "Tải về" mà user nào cũng sẽ yêu cầu. Export toàn bộ 
 **Áp dụng cho:** `apps/admin`
 
 **Việc cần làm:**
+
 - Cài `xlsx` (SheetJS)
 - Tạo `useExport` hook nhận column definitions + async data fetcher
 - Tích hợp vào `DataTable` — thêm button `[↓ Export]` trên toolbar
@@ -594,6 +680,7 @@ Tính năng "Tải về" mà user nào cũng sẽ yêu cầu. Export toàn bộ 
 - Tên file tự động: `users-export-2025-01-15.xlsx`
 
 **Tích hợp vào DataTable:**
+
 ```typescript
 <DataTable
   columns={columns}
@@ -615,6 +702,7 @@ Tính năng "Tải về" mà user nào cũng sẽ yêu cầu. Export toàn bộ 
 ```
 
 **`useExport` hook:**
+
 ```typescript
 const { exportCsv, exportExcel, isExporting, progress } = useExport({
   filename: 'users',
@@ -624,6 +712,7 @@ const { exportCsv, exportExcel, isExporting, progress } = useExport({
 ```
 
 **Excel output style:**
+
 ```
 Row 1 (header): background xanh đậm (#1e40af), chữ trắng, in đậm
 Row 2+ (data):  xen kẽ trắng / xám nhạt (#f8fafc)
@@ -634,6 +723,7 @@ Freeze row 1:   header cố định khi cuộn
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Click [↓ Export] → dropdown 4 options
 # 2. "Tải CSV" → file .csv download, mở bằng Excel → data đúng, headers đúng
@@ -656,6 +746,7 @@ Pattern form nhiều bước tái sử dụng: checkout, onboarding user mới, 
 **Áp dụng cho:** `apps/admin`, `apps/web`
 
 **Việc cần làm:**
+
 - Tạo `MultiStepForm` component wrapper
 - Tạo `useMultiStepForm` hook quản lý state, navigation, draft
 - Step indicator (circle + line) + progress bar
@@ -665,21 +756,23 @@ Pattern form nhiều bước tái sử dụng: checkout, onboarding user mới, 
 - Review step tự động render summary + nút "Sửa" từng section
 
 **`useMultiStepForm` hook:**
+
 ```typescript
 const {
-  currentStep,  // index hiện tại (0-based)
+  currentStep, // index hiện tại (0-based)
   totalSteps,
   isFirstStep,
   isLastStep,
-  next,         // async: trigger validation → next nếu pass
+  next, // async: trigger validation → next nếu pass
   back,
-  goTo,         // jump đến step đã completed
-  progress,     // 0–100
-  stepStatus,   // Record<number, 'pending'|'completed'|'error'>
+  goTo, // jump đến step đã completed
+  progress, // 0–100
+  stepStatus, // Record<number, 'pending'|'completed'|'error'>
 } = useMultiStepForm({ steps, form, draftKey: 'onboarding-draft' });
 ```
 
 **Step definition:**
+
 ```typescript
 const steps: Step[] = [
   {
@@ -706,6 +799,7 @@ const steps: Step[] = [
 ```
 
 **Step indicator UI:**
+
 ```
 ●─────────●─────────○
 ①         ②         ③
@@ -715,6 +809,7 @@ Progress bar: ██████████░░░░░░  66%
 ```
 
 **Review step tự động:**
+
 ```typescript
 // Step cuối render summary từ form values
 // Mỗi section có nút "Sửa" → goTo(stepIndex)
@@ -726,6 +821,7 @@ Progress bar: ██████████░░░░░░  66%
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Step indicator: ●─○─○ (step 1 active), progress: 33%
 # 2. Next khi chưa điền → validation errors đúng fields, không sang step 2
@@ -747,6 +843,7 @@ Breadcrumb hiện tại generate từ URL path nên hiển thị ID thô (`/user
 **Áp dụng cho:** `apps/admin`
 
 **Việc cần làm:**
+
 - Tạo `BreadcrumbResolver` registry — map route pattern → fetch function
 - Tạo `useDynamicBreadcrumb` hook tự resolve các dynamic segments
 - Cache bằng TanStack Query (staleTime: 5 phút)
@@ -754,25 +851,27 @@ Breadcrumb hiện tại generate từ URL path nên hiển thị ID thô (`/user
 - Fallback: hiển thị ID nếu fetch lỗi
 
 **`breadcrumb.config.ts`:**
+
 ```typescript
 // Đăng ký resolver cho từng resource — chỉ sửa file này khi thêm resource mới
 export const breadcrumbResolvers: BreadcrumbResolvers = {
-  '/users/:id':   (id) => api.get(`/users/${id}`).then(r => r.data.data.name),
-  '/posts/:id':   (id) => api.get(`/posts/${id}`).then(r => r.data.data.title),
-  '/orders/:id':  (id) => api.get(`/orders/${id}`).then(r => r.data.data.code),
+  '/users/:id': (id) => api.get(`/users/${id}`).then((r) => r.data.data.name),
+  '/posts/:id': (id) => api.get(`/posts/${id}`).then((r) => r.data.data.title),
+  '/orders/:id': (id) => api.get(`/orders/${id}`).then((r) => r.data.data.code),
 };
 
 // Static label overrides (không cần fetch)
 export const breadcrumbLabels: Record<string, string> = {
-  users:     'Người dùng',
-  posts:     'Bài viết',
-  orders:    'Đơn hàng',
-  settings:  'Cài đặt',
+  users: 'Người dùng',
+  posts: 'Bài viết',
+  orders: 'Đơn hàng',
+  settings: 'Cài đặt',
   dashboard: 'Dashboard',
 };
 ```
 
 **Output:**
+
 ```
 URL: /users/abc123/orders/xyz789
 
@@ -783,6 +882,7 @@ Mỗi segment là link clickable (trừ segment cuối)
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Truy cập /users/abc123
 # → Skeleton ngắn → "Dashboard > Người dùng > John Doe"
@@ -809,12 +909,14 @@ Wrapper chuẩn cho `next/image` với fallback xử lý ảnh lỗi, blur place
 **Áp dụng cho:** `apps/admin`, `apps/web`
 
 **Việc cần làm:**
+
 - Tạo `AppImage` — wrapper `next/image` với error fallback và blur placeholder
 - Tạo `Avatar` — circular/square, src hoặc initials fallback, 6 sizes
 - Màu avatar deterministic từ tên (hash) — cùng tên luôn cùng màu
 - Tạo `ProductImage` — aspect ratio cố định, skeleton loading
 
 **`Avatar` component:**
+
 ```typescript
 <Avatar
   src={user.avatar}          // nếu null/undefined/lỗi → dùng initials
@@ -826,6 +928,7 @@ Wrapper chuẩn cho `next/image` với fallback xử lý ảnh lỗi, blur place
 ```
 
 **Deterministic color từ tên:**
+
 ```typescript
 const AVATAR_COLORS = [
   { bg: '#EEF2FF', text: '#3730A3' }, // indigo
@@ -845,6 +948,7 @@ function getAvatarColor(name: string) {
 ```
 
 **`AppImage` component:**
+
 ```typescript
 <AppImage
   src={product.thumbnail}
@@ -858,6 +962,7 @@ function getAvatarColor(name: string) {
 ```
 
 **Avatar group (xếp chồng):**
+
 ```typescript
 // Dùng cho "assigned to" hiển thị nhiều user
 <AvatarGroup
@@ -869,6 +974,7 @@ function getAvatarColor(name: string) {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Avatar với src hợp lệ → hiển thị ảnh
 # 2. Avatar không có src → initials "JD" với màu background
