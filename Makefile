@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: setup install docker-up docker-down dev lint typecheck
+.PHONY: setup install docker-up docker-down dev lint typecheck db-migrate db-seed
 
 setup: install docker-up
 	@echo "Setup complete"
@@ -22,3 +22,9 @@ lint:
 
 typecheck:
 	pnpm typecheck
+
+db-migrate:
+	cd apps/backend && pnpm prisma:migrate
+
+db-seed:
+	cd apps/backend && pnpm prisma:seed

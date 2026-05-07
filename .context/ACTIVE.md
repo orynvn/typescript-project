@@ -19,30 +19,30 @@
 
 | Plan | Phase | Status | Next Action |
 |------|-------|--------|-------------|
-| `.context/plans/phase-1.md` | 1 | implemented | Run `pnpm install` and `make docker-up` to validate runtime |
-| `.context/plans/phase-2.md` | 2 | draft | Start backend bootstrap task 2.1 |
+| `.context/plans/phase-2.md` | 2 | implemented | Install deps and run migrate/seed + backend smoke test |
+| `.context/plans/phase-3.md` | 3 | draft | Start admin app bootstrap |
 
 ---
 
 ## Today's Focus
 
-- [x] Import Multi-AI workspace structure
-- [x] Build phase plans 1-10 from docs
-- [x] Scaffold Phase 1 monorepo infrastructure
+- [x] Commit and push Phase 1
+- [x] Implement backend foundation for Phase 2
+- [ ] Validate runtime with dependency install and smoke checks
 
 ---
 
 ## Open Blockers
 
-- Cần chạy setup runtime (`pnpm install`, `docker compose up`) để xác nhận acceptance criteria.
+- Chưa chạy runtime verification vì chưa cài dependencies trong workspace.
 
 ---
 
 ## Recent Context (last 3 changes)
 
-- [2026-05-07] feat: scaffolded phase-1 monorepo, tsconfig, lint hooks, docker, makefile.
+- [2026-05-07] feat(phase-2): backend foundation scaffold (NestJS, Prisma schema, auth/upload/mail/crud skeleton).
+- [2026-05-07] feat(phase-1): monorepo infra scaffold committed and pushed.
 - [2026-05-07] planning: created system-design + phase-1..phase-10 plans.
-- [2026-05-07] docs: aligned phase dependencies for upload/media across Phase 2/8/10.
 
 ---
 

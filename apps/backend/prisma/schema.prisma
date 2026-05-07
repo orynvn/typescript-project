@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  password      String?
+  name          String
+  avatar        String?
+  role          UserRole     @default(USER)
+  status        UserStatus   @default(ACTIVE)
+  emailVerified Boolean      @default(false)
+  googleId      String?      @unique
+
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+  mediaFiles    MediaFile[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([email])
+  @@index([status])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([resource, resourceId])
+}
+
+model MediaFile {
+  id           String   @id @default(cuid())
+  name         String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  key          String   @unique
+  width        Int?
+  height       Int?
+  uploadedBy   String
+  uploader     User     @relation(fields: [uploadedBy], references: [id])
+  folderId     String?
+  tags         String[]
+  alt          String?
+  caption      String?
+  usageCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([uploadedBy])
+  @@index([mimeType])
+  @@index([folderId])
+  @@index([tags])
+}
