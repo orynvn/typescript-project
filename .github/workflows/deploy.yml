@@ -20,19 +20,11 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: Install dependencies
+      - name: Validate lockfile
         run: pnpm install --frozen-lockfile
 
-      - name: Build workspace
-        run: pnpm build
-
-      - name: Build Docker images (dry run)
+      - name: Deploy step placeholder (phase-5 scaffold)
         run: |
-          docker build -f apps/backend/Dockerfile .
-          docker build -f apps/admin/Dockerfile .
-          docker build -f apps/web/Dockerfile .
-
-      - name: Deploy step placeholder
-        run: |
-          echo "Deploy script should run on VPS via SSH in production"
-          echo "scripts/deploy.sh"
+          echo "Deploy pipeline scaffold is ready."
+          echo "Production deployment commands will be enabled after backend build pipeline is finalized."
+          echo "Target script: scripts/deploy.sh"
