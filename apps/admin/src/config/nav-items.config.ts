@@ -1,4 +1,4 @@
-import { Activity, LayoutDashboard, Settings, Users } from 'lucide-react';
+import { Activity, Bell, LayoutDashboard, Settings, Users } from 'lucide-react';
 import type { UserRole } from '@/types';
 
 export type NavItem = {
@@ -15,6 +15,11 @@ export const navItems: NavItem[] = [
     title: 'User Management',
     icon: Users,
     children: [{ title: 'All Users', href: '/users' }],
+  },
+  {
+    title: 'Notifications',
+    href: '/notifications',
+    icon: Bell,
   },
   {
     title: 'Settings',

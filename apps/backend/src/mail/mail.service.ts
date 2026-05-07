@@ -15,4 +15,8 @@ export class MailService {
   async sendResetPassword(to: string, name: string, token: string): Promise<void> {
     this.logger.log(`Queue reset password email to ${to} (${name}) token=${token}`);
   }
+
+  async sendTwoFactorOtp(to: string, name: string, code: string): Promise<void> {
+    this.logger.log(`Queue 2FA OTP email to ${to} (${name}) code=${code}`);
+  }
 }

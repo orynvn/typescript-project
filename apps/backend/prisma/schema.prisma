@@ -19,6 +19,18 @@ enum UserStatus {
   BANNED
 }
 
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum TwoFactorMethod {
+  TOTP
+  EMAIL
+}
+
 model User {
   id            String       @id @default(cuid())
   email         String       @unique
@@ -29,10 +41,16 @@ model User {
   status        UserStatus   @default(ACTIVE)
   emailVerified Boolean      @default(false)
   googleId      String?      @unique
+  twoFactorEnabled Boolean @default(false)
+  twoFactorMethod  TwoFactorMethod?
+  twoFactorSecret  String?
+  backupCodes      String[]
 
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
   mediaFiles    MediaFile[]
+  notifications Notification[]
+  twoFactorChallenges TwoFactorChallenge[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -40,6 +58,38 @@ model User {
 
   @@index([email])
   @@index([status])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType @default(INFO)
+  title     String
+  body      String
+  actionUrl String?
+  metadata  Json?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}
+
+model TwoFactorChallenge {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method    TwoFactorMethod
+  tempToken String          @unique
+  codeHash  String
+  attempts  Int             @default(0)
+  expiresAt DateTime
+  consumedAt DateTime?
+  createdAt DateTime        @default(now())
+
+  @@index([userId, expiresAt])
 }
 
 model RefreshToken {

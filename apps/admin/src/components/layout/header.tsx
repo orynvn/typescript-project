@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function Header(): JSX.Element {
@@ -16,7 +17,10 @@ export function Header(): JSX.Element {
     <header style={{ borderBottom: '1px solid #ddd', padding: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div>{breadcrumbs.join(' > ') || 'Dashboard'}</div>
-        <div>{user ? `${user.name} (${user.role})` : 'Guest'}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <NotificationBell />
+          <div>{user ? `${user.name} (${user.role})` : 'Guest'}</div>
+        </div>
       </div>
     </header>
   );

@@ -28,7 +28,11 @@ export default function LoginPage(): JSX.Element {
   const onSubmit = handleSubmit(async (values) => {
     setErrorMessage(null);
     try {
-      await login(values.email, values.password);
+      const result = await login(values.email, values.password);
+      if (result.requiresTwoFactor) {
+        router.push('/two-factor');
+        return;
+      }
       router.push('/dashboard');
     } catch {
       setErrorMessage('Invalid credentials');

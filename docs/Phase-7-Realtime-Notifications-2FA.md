@@ -8,16 +8,16 @@
 
 ## Thứ tự ưu tiên
 
-| Priority | Task | Lý do |
-|----------|------|-------|
-| 🔴 P1 | **7.1** In-App Notification System | Gần như mọi dự án đều cần, làm sau tốn công refactor |
-| 🔴 P1 | **7.2** 2FA — TOTP + Email OTP | Khách hàng hay yêu cầu sau launch, làm sẵn rẻ hơn |
-| 🔴 P1 | **7.3** Real-time WebSocket | Cần thiết khi có notification live, chat, live update |
-| 🟡 P2 | **7.4** Email nâng cao | Unsubscribe + template preview — cần thiết cho production |
-| 🟡 P2 | **7.5** Scheduled Tasks / Cron | Báo cáo định kỳ, cleanup, digest email |
-| 🟡 P2 | **7.6** Webhook System | Khi cần tích hợp Stripe, GitHub hoặc cho client đăng ký event |
-| 🟢 P3 | **7.7** SMS / OTP qua Zalo OA | Dự án Việt Nam hay cần, nhưng có thể thêm sau |
-| 🟢 P3 | **7.8** Feature Flags | Deploy an toàn, A/B test — nice to have |
+| Priority | Task                               | Lý do                                                         |
+| -------- | ---------------------------------- | ------------------------------------------------------------- |
+| 🔴 P1    | **7.1** In-App Notification System | Gần như mọi dự án đều cần, làm sau tốn công refactor          |
+| 🔴 P1    | **7.2** 2FA — TOTP + Email OTP     | Khách hàng hay yêu cầu sau launch, làm sẵn rẻ hơn             |
+| 🔴 P1    | **7.3** Real-time WebSocket        | Cần thiết khi có notification live, chat, live update         |
+| 🟡 P2    | **7.4** Email nâng cao             | Unsubscribe + template preview — cần thiết cho production     |
+| 🟡 P2    | **7.5** Scheduled Tasks / Cron     | Báo cáo định kỳ, cleanup, digest email                        |
+| 🟡 P2    | **7.6** Webhook System             | Khi cần tích hợp Stripe, GitHub hoặc cho client đăng ký event |
+| 🟢 P3    | **7.7** SMS / OTP qua Zalo OA      | Dự án Việt Nam hay cần, nhưng có thể thêm sau                 |
+| 🟢 P3    | **7.8** Feature Flags              | Deploy an toàn, A/B test — nice to have                       |
 
 ---
 
@@ -29,6 +29,7 @@ Hệ thống thông báo trong ứng dụng: tạo notification khi có sự ki�
 **Việc cần làm:**
 
 **Backend:**
+
 - Thêm Prisma model `Notification`
 - Tạo `NotificationsModule` với CRUD endpoints
 - Tạo `NotificationsService` với method `send()` để các module khác gọi
@@ -37,6 +38,7 @@ Hệ thống thông báo trong ứng dụng: tạo notification khi có sự ki�
 - Endpoint: `GET /notifications` (paginated), `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`, `DELETE /notifications/:id`, `GET /notifications/unread-count`
 
 **Prisma model:**
+
 ```prisma
 model Notification {
   id         String             @id @default(cuid())
@@ -64,6 +66,7 @@ enum NotificationType {
 ```
 
 **`NotificationsService` — interface dùng trong toàn app:**
+
 ```typescript
 @Injectable()
 export class NotificationsService {
@@ -97,6 +100,7 @@ export class NotificationsService {
 ```
 
 **Cách dùng trong các module khác:**
+
 ```typescript
 // Trong AuthService sau khi user đăng ký thành công
 await this.notificationsService.send({
@@ -119,6 +123,7 @@ await this.notificationsService.send({
 ```
 
 **Frontend (Admin + Web):**
+
 - `NotificationBell` component: icon bell + badge số đỏ khi có unread
 - Dropdown list 10 notifications gần nhất
 - Click notification → navigate đến `actionUrl` → mark as read
@@ -127,6 +132,7 @@ await this.notificationsService.send({
 - Poll unread count mỗi 30s (upgrade lên WebSocket ở Task 7.3)
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Tạo notification từ backend
 curl -X POST http://localhost:3000/api/notifications/test \
@@ -163,6 +169,7 @@ curl -X PATCH http://localhost:3000/api/notifications/<id>/read \
 Xác thực 2 yếu tố với 2 phương thức: TOTP (Google Authenticator / Authy) và Email OTP. User có thể chọn phương thức ưa thích. Làm sẵn từ đầu vì tích hợp vào auth flow sau này rất phức tạp.
 
 **Việc cần làm:**
+
 - Cài `otplib`, `qrcode`
 - Cập nhật `User` model với các fields 2FA
 - Tạo `TwoFactorModule` với các endpoints
@@ -171,6 +178,7 @@ Xác thực 2 yếu tố với 2 phương thức: TOTP (Google Authenticator / A
 - Frontend: màn hình nhập OTP, màn hình setup TOTP với QR code
 
 **Cập nhật Prisma User model:**
+
 ```prisma
 model User {
   // ... existing fields
@@ -189,6 +197,7 @@ enum TwoFactorMethod {
 ```
 
 **Endpoints:**
+
 ```
 POST /auth/2fa/totp/setup       → Tạo secret, trả về QR code + secret text
 POST /auth/2fa/totp/verify      → Verify code lần đầu để activate TOTP
@@ -200,6 +209,7 @@ POST /auth/2fa/validate         → Validate code trong login flow
 ```
 
 **Login flow khi 2FA enabled:**
+
 ```
 Step 1: POST /auth/login { email, password }
         → Credentials đúng nhưng 2FA enabled
@@ -213,6 +223,7 @@ Step 2: POST /auth/2fa/validate { tempToken, code }
 ```
 
 **TOTP setup flow:**
+
 ```typescript
 // 1. Generate secret
 const secret = authenticator.generateSecret();
@@ -229,16 +240,20 @@ if (isValid) {
 ```
 
 **Backup codes:**
+
 ```typescript
 // Generate 8 codes dạng: XXXX-XXXX
-const codes = Array.from({ length: 8 }, () =>
-  `${randomBytes(2).toString('hex').toUpperCase()}-${randomBytes(2).toString('hex').toUpperCase()}`
+const codes = Array.from(
+  { length: 8 },
+  () =>
+    `${randomBytes(2).toString('hex').toUpperCase()}-${randomBytes(2).toString('hex').toUpperCase()}`,
 );
 // Lưu dạng bcrypt hash, không lưu plaintext
 // Mỗi code chỉ dùng được 1 lần (xóa sau khi dùng)
 ```
 
 **Email OTP:**
+
 ```typescript
 // Lưu trong Redis với TTL 5 phút
 // Key: `otp:email:${userId}` = { code: "123456", attempts: 0 }
@@ -248,6 +263,7 @@ await redis.setex(`otp:email:${userId}`, 300, JSON.stringify({ code, attempts: 0
 ```
 
 **Frontend — màn hình 2FA:**
+
 ```typescript
 // Sau khi login trả về requiresTwoFactor: true
 // → Redirect sang /auth/two-factor với tempToken
@@ -259,6 +275,7 @@ await redis.setex(`otp:email:${userId}`, 300, JSON.stringify({ code, attempts: 0
 ```
 
 **Settings page — quản lý 2FA:**
+
 ```
 Security tab trong Settings:
 ├── 2FA Status: Đang tắt / Đang bật (TOTP / Email)
@@ -271,6 +288,7 @@ Security tab trong Settings:
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Setup TOTP
 curl -X POST http://localhost:3000/api/auth/2fa/totp/setup \
@@ -278,6 +296,26 @@ curl -X POST http://localhost:3000/api/auth/2fa/totp/setup \
 # { qrCode: "data:image/png;base64,...", secret: "JBSWY3DPEHPK3PXP" }
 
 # Scan QR bằng Google Authenticator → lấy code 6 số
+
+---
+
+## Implementation Status (2026-05-07)
+
+```
+
+☑ Added Notification domain (Prisma model + API + unread count + mark read/all + delete)
+☑ Added NotificationBell and /notifications page in admin
+☑ Added realtime notification delivery baseline with SSE endpoint /api/notifications/stream
+☑ Added 2FA baseline with Email OTP challenge in login flow:
+
+- POST /api/auth/login can return { requiresTwoFactor, tempToken, method }
+- POST /api/auth/2fa/validate verifies OTP/backup code and returns tokens
+- POST /api/auth/2fa/email/send and /api/auth/2fa/email/verify for setup
+  ☑ Added backup codes generation/consumption and disable 2FA endpoint
+  ☐ TOTP QR-code flow is scaffold-only in this phase (no otplib/qrcode dependency yet)
+  ☐ WebSocket transport not implemented; using SSE baseline + polling in admin UI
+
+```
 
 # 2. Activate TOTP
 curl -X POST http://localhost:3000/api/auth/2fa/totp/verify \
@@ -314,6 +352,7 @@ curl -X POST http://localhost:3000/api/auth/2fa/validate \
 Nâng cấp notification system từ polling lên real-time push. Khi server tạo notification mới → user nhận ngay lập tức không cần refresh. Dùng Redis Pub/Sub để scale được khi chạy nhiều instance backend.
 
 **Việc cần làm:**
+
 - Cài `@nestjs/websockets`, `@nestjs/platform-socket.io`, `socket.io`, `@socket.io/redis-adapter`
 - Tạo `WebSocketModule` với `AppGateway`
 - JWT authentication cho WebSocket connections
@@ -323,13 +362,13 @@ Nâng cấp notification system từ polling lên real-time push. Khi server t�
 - Định nghĩa rõ ràng các event types
 
 **`AppGateway` — server:**
+
 ```typescript
 @WebSocketGateway({
   cors: { origin: process.env.WEB_URL?.split(','), credentials: true },
   namespace: '/',
 })
 export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
-
   @WebSocketServer() server: Server;
 
   constructor(
@@ -368,33 +407,36 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
 ```
 
 **Server Events (emit từ server → client):**
+
 ```typescript
 // Các event server gửi xuống client
 export const SERVER_EVENTS = {
   // Notifications
-  NOTIFICATION_NEW:    'notification:new',     // có notification mới
-  NOTIFICATION_COUNT:  'notification:count',   // cập nhật unread count
+  NOTIFICATION_NEW: 'notification:new', // có notification mới
+  NOTIFICATION_COUNT: 'notification:count', // cập nhật unread count
 
   // Data updates (cho admin dashboard)
-  DATA_UPDATED:        'data:updated',         // record trong DB được cập nhật
-  DATA_CREATED:        'data:created',         // record mới được tạo
-  DATA_DELETED:        'data:deleted',         // record bị xóa
+  DATA_UPDATED: 'data:updated', // record trong DB được cập nhật
+  DATA_CREATED: 'data:created', // record mới được tạo
+  DATA_DELETED: 'data:deleted', // record bị xóa
 
   // System
-  SYSTEM_ALERT:        'system:alert',         // thông báo hệ thống từ admin
-  USER_ONLINE_COUNT:   'user:online_count',    // số users đang online (cho admin)
+  SYSTEM_ALERT: 'system:alert', // thông báo hệ thống từ admin
+  USER_ONLINE_COUNT: 'user:online_count', // số users đang online (cho admin)
 } as const;
 ```
 
 **Client Events (emit từ client → server):**
+
 ```typescript
 export const CLIENT_EVENTS = {
-  MARK_NOTIFICATION_READ: 'notification:read',  // user đánh dấu đã đọc
-  PING:                   'ping',               // keepalive
+  MARK_NOTIFICATION_READ: 'notification:read', // user đánh dấu đã đọc
+  PING: 'ping', // keepalive
 } as const;
 ```
 
 **Tích hợp vào `NotificationsService`:**
+
 ```typescript
 async send(params: SendNotificationParams): Promise<Notification> {
   // 1. Lưu vào DB
@@ -416,6 +458,7 @@ async send(params: SendNotificationParams): Promise<Notification> {
 ```
 
 **Redis Adapter — scale nhiều instance:**
+
 ```typescript
 // Khi chạy nhiều backend instances, Redis Pub/Sub đảm bảo
 // event emit từ instance A vẫn đến được client kết nối ở instance B
@@ -427,6 +470,7 @@ io.adapter(createAdapter(pubClient, subClient));
 ```
 
 **Frontend — `useSocket` hook:**
+
 ```typescript
 // apps/admin/src/hooks/useSocket.ts
 export function useSocket() {
@@ -465,12 +509,15 @@ export function useSocket() {
       // Fallback về polling nếu WebSocket không khả dụng
     });
 
-    return () => { socket.disconnect(); };
+    return () => {
+      socket.disconnect();
+    };
   }, [accessToken]);
 }
 ```
 
 **Connection state indicator (UI):**
+
 ```typescript
 // Component hiển thị trạng thái kết nối WebSocket ở góc màn hình
 // 🟢 Connected (xanh, ẩn sau 3s)
@@ -479,6 +526,7 @@ export function useSocket() {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Mở Admin UI ở tab 1 (đã login)
 # DevTools → Network → WS tab → thấy WebSocket connection
@@ -513,6 +561,7 @@ Hoàn thiện email system cho production: unsubscribe chuẩn CAN-SPAM, live pr
 **Việc cần làm:**
 
 **Unsubscribe mechanism:**
+
 - Thêm `emailPreferences` vào User model
 - Mỗi email marketing/notification có link `Unsubscribe` ở footer
 - Link chứa signed JWT (không cần login để unsubscribe)
@@ -536,6 +585,7 @@ model EmailPreference {
 ```
 
 **Template preview server (development):**
+
 ```typescript
 // GET /api/email/preview/:templateName?data={}
 // Render template với data mẫu → trả về HTML
@@ -553,6 +603,7 @@ async previewTemplate(
 ```
 
 **Bounce & Complaint Handling (SES/SendGrid):**
+
 ```typescript
 // Webhook endpoint nhận bounce/complaint từ email provider
 // POST /api/webhooks/email/ses  (AWS SES → SNS → HTTP)
@@ -568,6 +619,7 @@ async previewTemplate(
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Template preview
 open http://localhost:3000/api/email/preview/welcome
@@ -599,6 +651,7 @@ curl -X PATCH http://localhost:3000/api/users/me/email-preferences \
 Các tác vụ chạy tự động theo lịch: gửi digest email hàng tuần, dọn dẹp data cũ, tạo báo cáo. Dùng `@nestjs/schedule` + Bull Queue để đảm bảo không bị mất job khi restart.
 
 **Việc cần làm:**
+
 - Cài `@nestjs/schedule`
 - Tạo `SchedulerModule` tập trung tất cả cron jobs
 - Tạo `CronJobsService` với các jobs mẫu
@@ -606,6 +659,7 @@ Các tác vụ chạy tự động theo lịch: gửi digest email hàng tuần,
 - Lưu lịch sử chạy job vào DB để audit
 
 **Prisma model:**
+
 ```prisma
 model CronJobLog {
   id        String   @id @default(cuid())
@@ -623,10 +677,10 @@ model CronJobLog {
 ```
 
 **Các jobs mẫu có sẵn:**
+
 ```typescript
 @Injectable()
 export class CronJobsService {
-
   // Dọn refresh tokens hết hạn — chạy lúc 3:00 AM mỗi ngày
   @Cron('0 3 * * *', { name: 'cleanup-expired-tokens' })
   async cleanupExpiredTokens() {
@@ -672,6 +726,7 @@ export class CronJobsService {
 ```
 
 **Admin UI — Cron Job Manager:**
+
 ```
 /admin/system/cron-jobs
 
@@ -688,6 +743,7 @@ export class CronJobsService {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Trigger job thủ công qua API
 curl -X POST http://localhost:3000/api/admin/cron-jobs/cleanup-expired-tokens/run \
@@ -718,6 +774,7 @@ curl http://localhost:3000/api/admin/cron-jobs/cleanup-expired-tokens/logs \
 Cho phép đăng ký nhận HTTP callback khi có event xảy ra trong hệ thống. Cần thiết khi tích hợp với Stripe, GitHub, hoặc khi client muốn nhận event từ platform.
 
 **Việc cần làm:**
+
 - Tạo `WebhooksModule` cho phép đăng ký endpoint URL + chọn events
 - HMAC SHA-256 signature để client verify request đến từ server
 - Retry với exponential backoff (tối đa 5 lần: 1m, 5m, 30m, 2h, 12h)
@@ -725,6 +782,7 @@ Cho phép đăng ký nhận HTTP callback khi có event xảy ra trong hệ th�
 - Incoming webhooks: nhận webhook từ Stripe, GitHub (verify signature)
 
 **Prisma models:**
+
 ```prisma
 model Webhook {
   id          String         @id @default(cuid())
@@ -756,18 +814,20 @@ model WebhookDelivery {
 ```
 
 **Danh sách events chuẩn:**
+
 ```typescript
 export const WEBHOOK_EVENTS = {
-  USER_CREATED:       'user.created',
-  USER_UPDATED:       'user.updated',
-  USER_DELETED:       'user.deleted',
-  USER_LOGIN:         'user.login',
-  PASSWORD_CHANGED:   'user.password_changed',
+  USER_CREATED: 'user.created',
+  USER_UPDATED: 'user.updated',
+  USER_DELETED: 'user.deleted',
+  USER_LOGIN: 'user.login',
+  PASSWORD_CHANGED: 'user.password_changed',
   // Thêm events theo từng dự án
 } as const;
 ```
 
 **Dispatch webhook với signature:**
+
 ```typescript
 async dispatch(event: string, payload: Record<string, unknown>) {
   const webhooks = await this.findActiveByEvent(event);
@@ -800,6 +860,7 @@ private createSignature(secret: string, payload: string): string {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Đăng ký webhook
 curl -X POST http://localhost:3000/api/webhooks \
@@ -838,6 +899,7 @@ curl http://localhost:3000/api/webhooks/<id>/deliveries \
 Gửi OTP qua SMS hoặc Zalo OA — phổ biến ở Việt Nam. Thiết kế interface thống nhất, swap provider dễ dàng không sửa business logic.
 
 **Việc cần làm:**
+
 - Tạo `SmsModule` với provider interface
 - Implement 2 providers: `EsmsProvider` (SMS), `ZaloOAProvider`
 - Tích hợp vào 2FA Email OTP → có thể switch sang Phone OTP
@@ -845,10 +907,11 @@ Gửi OTP qua SMS hoặc Zalo OA — phổ biến ở Việt Nam. Thiết kế i
 - Thêm `phone` field vào User model
 
 **Provider interface:**
+
 ```typescript
 interface ISmsProvider {
   send(params: {
-    to: string;    // số điện thoại: 0912345678 hoặc +84912345678
+    to: string; // số điện thoại: 0912345678 hoặc +84912345678
     message: string;
   }): Promise<{ success: boolean; messageId?: string }>;
 }
@@ -858,6 +921,7 @@ interface ISmsProvider {
 ```
 
 **Zalo OA Provider:**
+
 ```typescript
 // Zalo OA gửi message tới người dùng đã follow OA
 // Rẻ hơn SMS, tỉ lệ nhận cao hơn ở Việt Nam
@@ -881,6 +945,7 @@ async sendZaloOTP(zaloUserId: string, otp: string): Promise<void> {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Setup với eSMS test account
 # POST /api/auth/phone/send-otp { phone: "0912345678" }
@@ -904,6 +969,7 @@ async sendZaloOTP(zaloUserId: string, otp: string): Promise<void> {
 Bật/tắt tính năng mà không cần deploy lại. Hữu ích cho: deploy an toàn (tắt feature mới nếu có bug), A/B test, rollout từng nhóm user.
 
 **Việc cần làm:**
+
 - Tạo `FeatureFlagsModule` với model trong DB
 - Admin UI: toggle flags, target theo userId/role/percentage
 - Backend decorator `@FeatureFlag('flag-name')` cho route/service
@@ -911,6 +977,7 @@ Bật/tắt tính năng mà không cần deploy lại. Hữu ích cho: deploy an
 - Cache flags trong Redis (TTL 60s) để không query DB mỗi request
 
 **Prisma model:**
+
 ```prisma
 model FeatureFlag {
   id          String  @id @default(cuid())
@@ -930,6 +997,7 @@ model FeatureFlag {
 ```
 
 **Backend decorator:**
+
 ```typescript
 // Route level
 @FeatureFlag('new-api-v2')
@@ -947,6 +1015,7 @@ async processOrder(orderId: string) {
 ```
 
 **Frontend hook:**
+
 ```typescript
 // Fetch flags một lần khi login, cache trong Zustand
 const { isEnabled } = useFeatureFlag('new-dashboard');
@@ -954,6 +1023,7 @@ return isEnabled ? <NewDashboard /> : <OldDashboard />;
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Tạo feature flag
 curl -X POST http://localhost:3000/api/admin/feature-flags \
