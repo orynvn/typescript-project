@@ -12,6 +12,7 @@
 Bootstrap admin app với đầy đủ dependencies và cấu hình chuẩn. Quan trọng là thiết lập đúng từ đầu để tránh refactor sau.
 
 **Việc cần làm:**
+
 - Tạo Next.js 14 App Router trong `apps/admin`
 - Cài dependencies:
   ```
@@ -31,6 +32,7 @@ Bootstrap admin app với đầy đủ dependencies và cấu hình chuẩn. Qua
 - Setup Zustand store structure
 
 **Cấu trúc thư mục `apps/admin/src/`:**
+
 ```
 src/
 ├── app/
@@ -62,6 +64,7 @@ src/
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 cd apps/admin && pnpm dev
 # Server khởi động tại http://localhost:3001
@@ -82,6 +85,7 @@ curl http://localhost:3001/api/health
 Auth flow hoàn chỉnh: login → lưu token → redirect dashboard → auto refresh khi hết hạn → logout. Route guard tự động redirect nếu chưa đăng nhập hoặc không đủ quyền.
 
 **Việc cần làm:**
+
 - Tạo `AuthStore` (Zustand) lưu user info + token state
 - Tạo `axios instance` với interceptors:
   - Request: đính kèm `Authorization: Bearer <token>`
@@ -92,13 +96,14 @@ Auth flow hoàn chỉnh: login → lưu token → redirect dashboard → auto re
 - Lưu `accessToken` trong memory (Zustand), `refreshToken` trong httpOnly cookie (set bởi backend)
 
 **`stores/auth.store.ts`:**
+
 ```typescript
 interface AuthState {
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  
+
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
@@ -107,6 +112,7 @@ interface AuthState {
 ```
 
 **`middleware.ts` — route protection:**
+
 ```typescript
 // Public routes: /login
 // Protected routes: mọi thứ còn lại
@@ -120,6 +126,7 @@ export function middleware(request: NextRequest) {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Truy cập http://localhost:3001/dashboard khi chưa login
 # → Redirect tự động về /login
@@ -152,6 +159,7 @@ export function middleware(request: NextRequest) {
 Layout chuẩn cho toàn bộ admin portal. Chỉ cần config `navItems` là sidebar tự render đúng theo cấu trúc menu của từng dự án.
 
 **Việc cần làm:**
+
 - Tạo `AdminLayout` component bao gồm Sidebar + Header + main content area
 - Sidebar: collapsible, highlight active route, group items có thể config
 - Header: breadcrumb tự động, user dropdown (profile + logout), notification bell
@@ -160,6 +168,7 @@ Layout chuẩn cho toàn bộ admin portal. Chỉ cần config `navItems` là si
 - Breadcrumb tự động generate từ current path
 
 **`nav-items.config.ts` — cách config menu:**
+
 ```typescript
 export const navItems: NavItem[] = [
   {
@@ -186,6 +195,7 @@ export const navItems: NavItem[] = [
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Truy cập http://localhost:3001/dashboard sau khi login
 
@@ -209,6 +219,7 @@ export const navItems: NavItem[] = [
 Component table mạnh nhất của toàn bộ template. Truyền vào columns config + API endpoint là có ngay table với filter, sort, pagination, bulk action. Đây là thứ tiết kiệm nhiều giờ nhất mỗi dự án.
 
 **Việc cần làm:**
+
 - Tạo `DataTable<T>` component generic với TanStack Table
 - Hỗ trợ:
   - Column definition với type-safe header + cell renderer
@@ -222,6 +233,7 @@ Component table mạnh nhất của toàn bộ template. Truyền vào columns c
 - Tạo `useDataTable` hook kết nối với TanStack Query
 
 **Cách sử dụng:**
+
 ```typescript
 // Mỗi resource mới chỉ cần định nghĩa columns
 const columns: ColumnDef<User>[] = [
@@ -251,6 +263,7 @@ const columns: ColumnDef<User>[] = [
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Trang /users hiển thị DataTable với dữ liệu từ backend
 
@@ -273,6 +286,7 @@ const columns: ColumnDef<User>[] = [
 Module quản lý user hoàn chỉnh làm ví dụ chuẩn. Đây vừa là tính năng thực dùng, vừa là template để copy khi cần thêm module mới.
 
 **Việc cần làm:**
+
 - Tạo trang `/users` (danh sách với DataTable)
 - Tạo trang `/users/[id]` (detail + edit form)
 - Tạo modal "Create User"
@@ -282,18 +296,23 @@ Module quản lý user hoàn chỉnh làm ví dụ chuẩn. Đây vừa là tín
 - Upload avatar trực tiếp từ form (dùng `FileUpload`/`AvatarUpload` với `useMediaLibrary=false`)
 
 **Form validation chia sẻ giữa FE và BE:**
+
 ```typescript
 // packages/validators/src/user.ts
 export const createUserSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
-  password: z.string().min(8).regex(/^(?=.*[A-Z])(?=.*[0-9])/),
+  password: z
+    .string()
+    .min(8)
+    .regex(/^(?=.*[A-Z])(?=.*[0-9])/),
   role: z.nativeEnum(UserRole),
 });
 // Dùng cùng schema ở cả backend (class-validator) và frontend (react-hook-form)
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Trang /users hiển thị danh sách users từ DB
 # 2. Filter "Role: ADMIN" → chỉ hiện admins
@@ -317,6 +336,7 @@ export const createUserSchema = z.object({
 Dashboard tổng quan làm template. Mọi dự án đều cần dashboard, cần có sẵn layout và chart components để chỉ việc thay data.
 
 **Việc cần làm:**
+
 - Tạo stat cards: Total Users, Active Users, New This Month, Revenue (placeholder)
 - Tạo `AreaChart` users over time (recharts)
 - Tạo `BarChart` activity by day
@@ -327,6 +347,7 @@ Dashboard tổng quan làm template. Mọi dự án đều cần dashboard, cầ
 - Refresh button + auto refresh mỗi 5 phút
 
 **✅ Test xác nhận:**
+
 ```bash
 # Truy cập /dashboard sau login
 
@@ -337,3 +358,18 @@ Dashboard tổng quan làm template. Mọi dự án đều cần dashboard, cầ
 # 5. Loading state: skeleton hiển thị khi fetch lần đầu
 # 6. Responsive: trên màn hình 768px → cards stack 2 cột → chart full width
 ```
+
+---
+
+## Checklist cập nhật (2026-05-07)
+
+- [x] Task 3.1 Bootstrap admin app structure theo App Router (`(auth)`, `(dashboard)` groups, providers, hooks, stores).
+- [x] Task 3.2 Auth foundation scaffold (zustand auth store, axios interceptor, auth provider, middleware redirect).
+- [x] Task 3.3 Admin layout scaffold (sidebar + header + breadcrumb basic).
+- [x] Task 3.4 Generic DataTable scaffold (`DataTable<T>` với search cơ bản + row actions).
+- [x] Task 3.5 User pages scaffold (`/users`, `/users/[id]`).
+- [x] Task 3.6 Dashboard scaffold (stat cards placeholder).
+- [x] Test đã chạy:
+  - [x] `pnpm lint` pass.
+  - [x] `pnpm typecheck` pass.
+- [ ] Chưa verify runtime UI bằng `pnpm --filter @apps/admin dev` do môi trường dependency frontend đang cần hardening thêm ở phase sau.

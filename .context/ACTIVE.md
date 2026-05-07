@@ -17,32 +17,32 @@
 
 ## In Progress
 
-| Plan | Phase | Status | Next Action |
-|------|-------|--------|-------------|
-| `.context/plans/phase-2.md` | 2 | implemented | Install deps and run migrate/seed + backend smoke test |
-| `.context/plans/phase-3.md` | 3 | draft | Start admin app bootstrap |
+| Plan                        | Phase | Status      | Next Action                                                                  |
+| --------------------------- | ----- | ----------- | ---------------------------------------------------------------------------- |
+| `.context/plans/phase-3.md` | 3     | implemented | Runtime polish for admin app + real Next lint/typecheck in Phase 4 hardening |
+| `.context/plans/phase-4.md` | 4     | draft       | Start user frontend bootstrap                                                |
 
 ---
 
 ## Today's Focus
 
-- [x] Commit and push Phase 1
-- [x] Implement backend foundation for Phase 2
-- [ ] Validate runtime with dependency install and smoke checks
+- [x] Implement Phase 3 scaffolding
+- [x] Run lint/typecheck tests for workspace
+- [x] Prepare commit/push + CI verification
 
 ---
 
 ## Open Blockers
 
-- Chưa chạy runtime verification vì chưa cài dependencies trong workspace.
+- Frontend dependency install on this machine is unstable (`ECONNRESET`, long-running pnpm finalize).
 
 ---
 
 ## Recent Context (last 3 changes)
 
-- [2026-05-07] feat(phase-2): backend foundation scaffold (NestJS, Prisma schema, auth/upload/mail/crud skeleton).
-- [2026-05-07] feat(phase-1): monorepo infra scaffold committed and pushed.
-- [2026-05-07] planning: created system-design + phase-1..phase-10 plans.
+- [2026-05-07] feat(phase-3): admin frontend scaffold (auth/layout/datatable/users/dashboard).
+- [2026-05-07] fix(ci): resolved lint/typecheck pipeline for current monorepo baseline.
+- [2026-05-07] feat(phase-2): backend foundation scaffold completed.
 
 ---
 
