@@ -8,7 +8,7 @@
     "start": "node dist/main.js",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "echo 'backend tests will be added in phase 2.8'",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "pnpm prisma:generate && tsc --noEmit -p tsconfig.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts"
