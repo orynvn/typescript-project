@@ -44,6 +44,7 @@
 Thêm toàn bộ monitoring services vào Docker Compose. Tách riêng file `docker-compose.monitoring.yml` để không làm phức tạp file chính, dễ bật/tắt độc lập.
 
 **Việc cần làm:**
+
 - Tạo `docker/docker-compose.monitoring.yml`
 - Tạo cấu hình cho: Prometheus, Grafana, Loki, Promtail, Node Exporter, Uptime Kuma
 - Tạo thư mục `docker/monitoring/` chứa config files
@@ -51,6 +52,7 @@ Thêm toàn bộ monitoring services vào Docker Compose. Tách riêng file `doc
 - Đảm bảo monitoring services dùng chung network với app services
 
 **`docker/docker-compose.monitoring.yml`:**
+
 ```yaml
 version: '3.9'
 
@@ -155,6 +157,7 @@ networks:
 ```
 
 **`docker/monitoring/prometheus/alerts.yml`:**
+
 ```yaml
 groups:
   - name: app_alerts
@@ -164,38 +167,39 @@ groups:
         for: 5m
         labels: { severity: warning }
         annotations:
-          summary: "RAM usage > 85% trong 5 phút"
+          summary: 'RAM usage > 85% trong 5 phút'
 
       - alert: HighDiskUsage
         expr: (1 - (node_filesystem_free_bytes / node_filesystem_size_bytes)) * 100 > 80
         for: 5m
         labels: { severity: warning }
         annotations:
-          summary: "Disk usage > 80%"
+          summary: 'Disk usage > 80%'
 
       - alert: BackendDown
         expr: up{job="backend"} == 0
         for: 1m
         labels: { severity: critical }
         annotations:
-          summary: "Backend service không phản hồi"
+          summary: 'Backend service không phản hồi'
 
       - alert: HighErrorRate
         expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
         for: 5m
         labels: { severity: warning }
         annotations:
-          summary: "Error rate > 10% trong 5 phút"
+          summary: 'Error rate > 10% trong 5 phút'
 
       - alert: SlowResponseTime
         expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
         for: 5m
         labels: { severity: warning }
         annotations:
-          summary: "P95 response time > 2s"
+          summary: 'P95 response time > 2s'
 ```
 
 **Makefile targets bổ sung:**
+
 ```makefile
 monitoring-up: ## Khởi động monitoring stack
 	docker compose -f docker/docker-compose.monitoring.yml up -d
@@ -211,6 +215,7 @@ monitoring-logs: ## Xem logs monitoring services
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 make monitoring-up
 
@@ -235,6 +240,7 @@ docker compose -f docker/docker-compose.monitoring.yml ps
 Expose metrics từ NestJS để Prometheus scrape. Bao gồm HTTP metrics (request count, latency, error rate) và custom business metrics.
 
 **Việc cần làm:**
+
 - Cài `@willsoto/nestjs-prometheus`, `prom-client`
 - Expose endpoint `GET /api/metrics` (IP whitelist hoặc internal-only)
 - Track các metrics:
@@ -246,6 +252,7 @@ Expose metrics từ NestJS để Prometheus scrape. Bao gồm HTTP metrics (requ
   - `file_upload_total` — counter
 
 **`MetricsModule` setup:**
+
 ```typescript
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
@@ -261,6 +268,7 @@ export class MetricsModule {}
 ```
 
 **Custom HTTP metrics interceptor:**
+
 ```typescript
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {
@@ -288,21 +296,20 @@ export class MetricsInterceptor implements NestInterceptor {
 ```
 
 **Prisma query metrics middleware:**
+
 ```typescript
 // Trong PrismaService — đo thời gian mỗi query
 this.$use(async (params, next) => {
   const before = Date.now();
   const result = await next(params);
   const after = Date.now();
-  dbQueryDuration.observe(
-    { model: params.model, action: params.action },
-    (after - before) / 1000,
-  );
+  dbQueryDuration.observe({ model: params.model, action: params.action }, (after - before) / 1000);
   return result;
 });
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Gọi vài requests
 for i in {1..10}; do curl -s http://localhost:3000/api/health; done
@@ -322,6 +329,7 @@ curl http://localhost:3000/api/metrics | grep http_requests_total
 Tạo dashboards pre-built tự động load khi khởi động Grafana. Không cần setup thủ công mỗi lần deploy mới.
 
 **Việc cần làm:**
+
 - Cấu hình Grafana provisioning (datasources + dashboards tự động load)
 - Tạo **Dashboard 1: System Overview** — VPS metrics
 - Tạo **Dashboard 2: Backend Performance** — API metrics
@@ -329,6 +337,7 @@ Tạo dashboards pre-built tự động load khi khởi động Grafana. Không 
 - Cấu hình alert rules gửi email khi có vấn đề
 
 **Cấu trúc provisioning:**
+
 ```
 docker/monitoring/grafana/
 ├── provisioning/
@@ -341,6 +350,7 @@ docker/monitoring/grafana/
 ```
 
 **`provisioning/datasources/datasources.yml`:**
+
 ```yaml
 apiVersion: 1
 datasources:
@@ -358,6 +368,7 @@ datasources:
 ```
 
 **Dashboard 1 — System Overview panels:**
+
 ```
 Row 1: [CPU Usage %]  [RAM Usage %]  [Disk Usage %]  [Uptime]
 Row 2: [CPU Over Time — line chart]  [Memory Over Time — line chart]
@@ -365,6 +376,7 @@ Row 3: [Network In/Out]  [Disk Read/Write]  [Load Average]
 ```
 
 **Dashboard 2 — Backend Performance panels:**
+
 ```
 Row 1: [Requests/min]  [Error Rate %]  [P95 Latency]  [Active Connections]
 Row 2: [Request Rate by Status Code]  [Latency Percentiles P50/P95/P99]
@@ -373,6 +385,7 @@ Row 4: [5xx Errors Over Time]  [Top Error Routes — table]
 ```
 
 **Dashboard 3 — Application Logs panels:**
+
 ```
 Row 1: [Log Rate by Level — bar chart: info/warn/error]
 Row 2: [Live log stream — filter by level, service, search text]
@@ -380,6 +393,7 @@ Row 2: [Live log stream — filter by level, service, search text]
 ```
 
 **Alert rule mẫu:**
+
 ```
 Tên: "High Error Rate"
 Condition: avg(rate(http_requests_total{status=~"5.."}[5m])) > 0.1
@@ -389,6 +403,7 @@ Message: "⚠️ Error rate vượt 10% — kiểm tra ngay!"
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Restart Grafana để load provisioning
 docker restart app_grafana
@@ -415,6 +430,7 @@ for i in {1..50}; do curl -s http://localhost:3000/api/health; done
 Sentry bắt exceptions tự động kèm full context: stack trace, request info, user info, session replay. Khi production crash lúc 3 giờ sáng, nhận alert và biết chính xác dòng code nào lỗi mà không cần SSH.
 
 **Việc cần làm:**
+
 - Tạo tài khoản Sentry (sentry.io — free 5k errors/tháng) → tạo 3 projects: `backend`, `admin`, `web`
 - Cài `@sentry/nestjs` + `@sentry/profiling-node` cho backend
 - Cài `@sentry/nextjs` cho admin và web
@@ -423,6 +439,7 @@ Sentry bắt exceptions tự động kèm full context: stack trace, request inf
 - Thêm `SENTRY_DSN_*` vào `.env.example`
 
 **Backend — `main.ts`:**
+
 ```typescript
 import * as Sentry from '@sentry/nestjs';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
@@ -438,6 +455,7 @@ Sentry.init({
 ```
 
 **Backend — gắn user context + capture trong GlobalExceptionFilter:**
+
 ```typescript
 // Sau khi verify JWT token thành công:
 Sentry.setUser({ id: user.id, email: user.email, role: user.role });
@@ -453,6 +471,7 @@ Sentry.captureException(exception, {
 ```
 
 **Frontend Admin — `sentry.client.config.ts`:**
+
 ```typescript
 import * as Sentry from '@sentry/nextjs';
 
@@ -460,8 +479,8 @@ Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN_ADMIN,
   environment: process.env.NODE_ENV,
   tracesSampleRate: 0.2,
-  replaysSessionSampleRate: 0.1,   // Record 10% sessions bình thường
-  replaysOnErrorSampleRate: 1.0,   // Record 100% sessions có error
+  replaysSessionSampleRate: 0.1, // Record 10% sessions bình thường
+  replaysOnErrorSampleRate: 1.0, // Record 100% sessions có error
   integrations: [
     Sentry.replayIntegration({
       maskAllText: false,
@@ -473,6 +492,7 @@ Sentry.init({
 ```
 
 **Frontend — gắn/xóa user context theo auth state:**
+
 ```typescript
 // Trong auth store, sau login:
 Sentry.setUser({ id: user.id, email: user.email, role: user.role });
@@ -482,6 +502,7 @@ Sentry.setUser(null);
 ```
 
 **`.env.example` bổ sung:**
+
 ```env
 # Sentry — để trống nếu không dùng, sẽ tự động disabled
 SENTRY_DSN_BACKEND=
@@ -492,6 +513,7 @@ GRAFANA_PASSWORD=grafana123
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Backend: tạo endpoint test
 # GET /api/test/error → throw new Error('Test Sentry backend')
@@ -523,6 +545,7 @@ curl http://localhost:3000/api/test/error
 Trang monitoring tích hợp ngay trong admin portal — không cần mở Grafana riêng. SUPER_ADMIN có thể xem health hệ thống, metrics, recent errors và resource usage trong giao diện quen thuộc mà không cần biết Grafana hay Prometheus.
 
 **Việc cần làm:**
+
 - Tạo trang `/monitoring` trong admin (chỉ `SUPER_ADMIN` truy cập được)
 - Thêm vào sidebar nav với icon `Activity`, badge đỏ khi có errors
 - Tạo backend endpoint `GET /api/admin/monitoring/overview`
@@ -530,6 +553,7 @@ Trang monitoring tích hợp ngay trong admin portal — không cần mở Grafa
 - Trang chia thành 6 sections
 
 **Section 1 — Service Health Cards:**
+
 ```
 ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
 │  Backend     │ │  Database    │ │    Redis     │ │   Storage    │
@@ -540,6 +564,7 @@ Màu: xanh = Healthy · vàng = Degraded · đỏ = Down
 ```
 
 **Section 2 — Key Metrics (24h):**
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │  [Total Requests]  [Error Rate]  [Avg Latency]  [Uptime %]  │
@@ -548,6 +573,7 @@ Màu: xanh = Healthy · vàng = Degraded · đỏ = Down
 ```
 
 **Section 3 — Request Rate Chart (recharts, 24h):**
+
 ```
 Line chart 2 series theo giờ:
   ─── Total requests  (xanh)
@@ -556,6 +582,7 @@ Auto-refresh mỗi 60 giây
 ```
 
 **Section 4 — Recent Errors Table:**
+
 ```
 ┌──────────────┬───────┬──────────────────────────┬──────────────┐
 │ Time         │ Level │ Message                  │ Route        │
@@ -568,6 +595,7 @@ Click row → modal chi tiết với stack trace đầy đủ
 ```
 
 **Section 5 — System Resources:**
+
 ```
 CPU:   [████████░░░░░░░░] 45%   Last 5min avg: 42%
 RAM:   [████████████░░░░] 67%   Used: 1.3 GB / 2 GB
@@ -575,27 +603,29 @@ Disk:  [██████░░░░░░░░░░] 38%   Used: 19 GB / 50
 ```
 
 **Section 6 — Queue Status:**
+
 ```
 Email Queue:  3 pending  ·  0 failed  ·  1,240 completed
 ```
 
 **Backend endpoint response type:**
+
 ```typescript
 interface MonitoringOverview {
   services: {
-    backend:  { status: 'healthy' | 'degraded' | 'down'; latencyMs: number };
+    backend: { status: 'healthy' | 'degraded' | 'down'; latencyMs: number };
     database: { status: 'healthy' | 'degraded' | 'down'; latencyMs: number };
-    redis:    { status: 'healthy' | 'degraded' | 'down'; latencyMs: number };
-    storage:  { status: 'healthy' | 'degraded' | 'down' };
+    redis: { status: 'healthy' | 'degraded' | 'down'; latencyMs: number };
+    storage: { status: 'healthy' | 'degraded' | 'down' };
   };
   metrics24h: {
     totalRequests: number;
-    errorRate: number;       // percentage 0–100
+    errorRate: number; // percentage 0–100
     avgLatencyMs: number;
     uptimePercent: number;
   };
   requestChart: Array<{
-    hour: string;            // "14:00"
+    hour: string; // "14:00"
     total: number;
     errors: number;
   }>;
@@ -621,6 +651,7 @@ interface MonitoringOverview {
 ```
 
 **Service health check logic:**
+
 ```typescript
 // Ping mỗi service và đo latency
 // PostgreSQL:  SELECT 1  →  latency > 500ms = degraded, exception = down
@@ -630,11 +661,12 @@ interface MonitoringOverview {
 ```
 
 **Frontend — TanStack Query + auto-refresh:**
+
 ```typescript
 const { data, isFetching } = useQuery({
   queryKey: ['monitoring-overview'],
   queryFn: fetchMonitoringOverview,
-  refetchInterval: 60_000,         // tự refresh mỗi 60 giây
+  refetchInterval: 60_000, // tự refresh mỗi 60 giây
   staleTime: 30_000,
 });
 
@@ -644,6 +676,7 @@ const { data, isFetching } = useQuery({
 ```
 
 **Sidebar nav — badge đỏ khi có lỗi:**
+
 ```typescript
 // nav-items.config.ts
 {
@@ -657,6 +690,7 @@ const { data, isFetching } = useQuery({
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # 1. Permission
 #    Login SUPER_ADMIN → thấy "Monitoring" trong sidebar
@@ -700,12 +734,14 @@ const { data, isFetching } = useQuery({
 Monitor uptime tất cả endpoints quan trọng. Alert ngay khi service down, không chờ user báo. Status page public để chia sẻ với client nếu cần.
 
 **Việc cần làm:**
+
 - Setup Uptime Kuma lần đầu qua UI
 - Tạo 6 monitors cho tất cả services
 - Cấu hình notification (Email + Telegram tùy chọn)
 - Export config để tái sử dụng cho dự án mới
 
 **Monitors cần tạo:**
+
 ```
 1. Backend API Health
    Type: HTTP · URL: http://app_backend:3000/api/health
@@ -733,6 +769,7 @@ Monitor uptime tất cả endpoints quan trọng. Alert ngay khi service down, k
 ```
 
 **Telegram notification (nhanh hơn email):**
+
 ```
 1. Chat với @BotFather → /newbot → lấy BOT_TOKEN
 2. Gửi message tới bot → lấy CHAT_ID từ
@@ -744,6 +781,7 @@ Monitor uptime tất cả endpoints quan trọng. Alert ngay khi service down, k
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Truy cập http://localhost:3102 → tạo admin account
 # Tạo 6 monitors → tất cả ● UP (xanh)
@@ -770,12 +808,14 @@ docker start app_backend
 Thu thập logs từ tất cả containers, query bằng Grafana UI thay vì SSH grep. Khi có incident, tìm root cause trong vài giây thay vì hàng giờ.
 
 **Việc cần làm:**
+
 - Cấu hình Promtail scrape logs từ tất cả Docker containers
 - Cấu hình Loki lưu và index logs với retention 30 ngày
 - Cập nhật Winston backend output JSON (Loki parse được)
 - Tạo Loki query library trong Grafana (saved queries)
 
 **`docker/monitoring/promtail/promtail.yml`:**
+
 ```yaml
 server:
   http_listen_port: 9080
@@ -811,25 +851,28 @@ scrape_configs:
 ```
 
 **Winston config cập nhật — JSON format production:**
+
 ```typescript
 export const winstonConfig: WinstonModuleOptions = {
   transports: [
     new winston.transports.Console({
-      format: process.env.NODE_ENV === 'production'
-        ? winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),   // Loki parse được
-          )
-        : winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple(), // Dễ đọc khi dev
-          ),
+      format:
+        process.env.NODE_ENV === 'production'
+          ? winston.format.combine(
+              winston.format.timestamp(),
+              winston.format.json(), // Loki parse được
+            )
+          : winston.format.combine(
+              winston.format.colorize(),
+              winston.format.simple(), // Dễ đọc khi dev
+            ),
     }),
   ],
 };
 ```
 
 **Saved queries trong Grafana (tạo sẵn để dùng nhanh):**
+
 ```logql
 # Tất cả errors từ backend
 {container="app_backend"} |= `"level":"error"` | json
@@ -851,6 +894,7 @@ export const winstonConfig: WinstonModuleOptions = {
 ```
 
 **✅ Test xác nhận:**
+
 ```bash
 # Tạo log events
 curl -X POST http://localhost:3000/api/auth/login \
@@ -915,4 +959,24 @@ Loki
 ☑ Logs từ app_backend xuất hiện trong Grafana Explore
 ☑ Filter level=error hoạt động
 ☑ Tìm log theo requestId hoạt động
+```
+
+---
+
+## Implementation Status (2026-05-07)
+
+```
+☑ Added docker monitoring stack scaffold:
+  - docker/docker-compose.monitoring.yml
+  - docker/monitoring/prometheus|grafana|loki|promtail configs
+☑ Added Makefile monitoring targets: monitoring-up/down/logs
+☑ Added backend /api/metrics endpoint (Prometheus text format baseline)
+☑ Added request-id propagation in response + error payloads
+☑ Added metrics interceptor for request count/latency/error tracking
+☑ Added admin endpoints:
+  - GET /api/admin/monitoring/overview (SUPER_ADMIN)
+  - GET /api/admin/monitoring/error-count (SUPER_ADMIN)
+☑ Added admin /monitoring page + sidebar badge (SUPER_ADMIN only)
+☐ Pending runtime validation on VPS (docker monitors + alert channels)
+☐ Pending Sentry full integration (backend/admin/web DSN wiring)
 ```

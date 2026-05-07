@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, Users } from 'lucide-react';
+import { Activity, LayoutDashboard, Settings, Users } from 'lucide-react';
 import type { UserRole } from '@/types';
 
 export type NavItem = {
@@ -20,6 +20,12 @@ export const navItems: NavItem[] = [
     title: 'Settings',
     href: '/settings',
     icon: Settings,
+    roles: ['SUPER_ADMIN'],
+  },
+  {
+    title: 'Monitoring',
+    href: '/monitoring',
+    icon: Activity,
     roles: ['SUPER_ADMIN'],
   },
 ];

@@ -1,0 +1,20 @@
+{
+  "id": null,
+  "title": "Application Logs",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Live Logs",
+      "gridPos": { "h": 16, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "{container=~\".*app_.*\"}",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

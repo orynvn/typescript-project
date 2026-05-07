@@ -1,0 +1,26 @@
+{
+  "id": null,
+  "title": "Backend Performance",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Total Requests",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "targets": [{ "expr": "sum(http_requests_total)", "refId": "A" }]
+    },
+    {
+      "type": "stat",
+      "title": "Error Requests",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "targets": [{ "expr": "sum(http_requests_errors_total)", "refId": "A" }]
+    },
+    {
+      "type": "stat",
+      "title": "Avg Latency (ms)",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "targets": [{ "expr": "http_request_duration_milliseconds_average", "refId": "A" }]
+    }
+  ]
+}

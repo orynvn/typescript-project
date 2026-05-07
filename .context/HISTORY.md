@@ -11,3 +11,4 @@
 [2026-05-07] feat(phase-3): scaffold admin frontend foundation and validated lint/typecheck
 [2026-05-07] feat(phase-4): scaffold web frontend foundation and validated lint/typecheck
 [2026-05-07] feat(phase-5): scaffold DX/tooling/deployment baseline and validated lint/typecheck
+[2026-05-07] feat(phase-6): implemented observability baseline (metrics, request-id, admin monitoring page, monitoring docker stack)

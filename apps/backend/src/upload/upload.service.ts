@@ -1,6 +1,7 @@
 import type { UploadResult } from '@repo/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MediaFile } from '@prisma/client';
+import { MetricsService } from '../monitoring/metrics.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { MinioStorageService } from '../storage/minio-storage.service';
 
@@ -8,7 +9,8 @@ import { MinioStorageService } from '../storage/minio-storage.service';
 export class UploadService {
   constructor(
     private readonly storage: MinioStorageService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async uploadImage(file: Express.Multer.File, uploadedBy: string): Promise<UploadResult> {
@@ -18,10 +20,11 @@ export class UploadService {
       fileBuffer: file.buffer,
       fileName: file.originalname,
       mimeType: file.mimetype,
-      folder: 'uploads/images'
+      folder: 'uploads/images',
     });
 
     const media = await this.createMediaFile(uploadedBy, uploaded);
+    this.metricsService.incrementFileUpload();
     return this.toUploadResult(media);
   }
 
@@ -32,10 +35,11 @@ export class UploadService {
       fileBuffer: file.buffer,
       fileName: file.originalname,
       mimeType: file.mimetype,
-      folder: 'uploads/files'
+      folder: 'uploads/files',
     });
 
     const media = await this.createMediaFile(uploadedBy, uploaded);
+    this.metricsService.incrementFileUpload();
     return this.toUploadResult(media);
   }
 
@@ -52,7 +56,7 @@ export class UploadService {
 
   private async createMediaFile(
     uploadedBy: string,
-    uploaded: Omit<UploadResult, 'id'>
+    uploaded: Omit<UploadResult, 'id'>,
   ): Promise<MediaFile> {
     return this.prisma.mediaFile.create({
       data: {
@@ -65,8 +69,8 @@ export class UploadService {
         width: uploaded.width,
         height: uploaded.height,
         uploadedBy,
-        tags: []
-      }
+        tags: [],
+      },
     });
   }
 
@@ -79,7 +83,7 @@ export class UploadService {
       size: media.size,
       mimeType: media.mimeType,
       width: media.width ?? undefined,
-      height: media.height ?? undefined
+      height: media.height ?? undefined,
     };
   }
 }

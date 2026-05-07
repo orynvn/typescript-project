@@ -1,0 +1,102 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: app_prometheus
+    restart: unless-stopped
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - monitoring_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: app_grafana
+    restart: unless-stopped
+    ports:
+      - '3100:3000'
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-grafana123}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - monitoring_network
+
+  loki:
+    image: grafana/loki:latest
+    container_name: app_loki
+    restart: unless-stopped
+    ports:
+      - '3101:3100'
+    volumes:
+      - ./monitoring/loki/loki.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring_network
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: app_promtail
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/promtail/promtail.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - monitoring_network
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: app_node_exporter
+    restart: unless-stopped
+    ports:
+      - '9100:9100'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - monitoring_network
+
+  uptime_kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: app_uptime_kuma
+    restart: unless-stopped
+    ports:
+      - '3102:3001'
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - monitoring_network
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  uptime_kuma_data:
+
+networks:
+  monitoring_network:
+    driver: bridge

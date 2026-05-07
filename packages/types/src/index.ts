@@ -1,6 +1,7 @@
 export type AppHealth = {
-  status: 'ok';
+  status: 'ok' | 'degraded';
   timestamp: string;
+  checks?: Record<string, { status: 'up' | 'down'; latencyMs?: number }>;
 };
 
 export type UploadResult = {

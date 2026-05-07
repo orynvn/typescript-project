@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { validateEnv } from './config/env.validation';
 import { HealthModule } from './health/health.module';
 import { MailModule } from './mail/mail.module';
+import { MonitoringModule } from './monitoring/monitoring.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
 import { UploadModule } from './upload/upload.module';
@@ -15,15 +16,16 @@ import { UploadModule } from './upload/upload.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 100
-      }
+        limit: 100,
+      },
     ]),
     PrismaModule,
     StorageModule,
     AuthModule,
     UploadModule,
     MailModule,
-    HealthModule
-  ]
+    HealthModule,
+    MonitoringModule,
+  ],
 })
 export class AppModule {}

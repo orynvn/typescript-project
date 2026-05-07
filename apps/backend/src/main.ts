@@ -7,12 +7,15 @@ import helmet from 'helmet';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { winstonConfig } from './config/winston.config';
+import { MetricsService } from './monitoring/metrics.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger(winstonConfig)
+    logger: WinstonModule.createLogger(winstonConfig),
   });
 
   const configService = app.get(ConfigService);
@@ -21,7 +24,7 @@ async function bootstrap(): Promise<void> {
   app.use(compression());
   app.enableCors({
     origin: configService.get<string>('WEB_URL', '*').split(','),
-    credentials: true
+    credentials: true,
   });
 
   app.enableVersioning({ type: VersioningType.URI });
@@ -32,11 +35,14 @@ async function bootstrap(): Promise<void> {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true }
-    })
+      transformOptions: { enableImplicitConversion: true },
+    }),
   );
-  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.use(new RequestIdMiddleware().use);
+  const metricsService = app.get(MetricsService);
+  app.useGlobalFilters(new GlobalExceptionFilter(metricsService));
   app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(new MetricsInterceptor(metricsService));
 
   if (configService.get<string>('NODE_ENV') !== 'production') {
     const swaggerConfig = new DocumentBuilder()

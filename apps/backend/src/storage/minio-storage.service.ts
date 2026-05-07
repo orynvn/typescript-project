@@ -24,11 +24,19 @@ export class MinioStorageService implements IStorageProvider {
       url: `${baseUrl}/${this.configService.get<string>('MINIO_BUCKET', 'uploads')}/${key}`,
       name: input.fileName,
       size: input.fileBuffer.byteLength,
-      mimeType: input.mimeType
+      mimeType: input.mimeType,
     };
   }
 
   async delete(_key: string): Promise<void> {
     // Placeholder: MinIO SDK removeObject will be wired in runtime integration task.
+  }
+
+  async healthCheck(): Promise<void> {
+    // Placeholder for phase-6 observability: validates config presence as baseline signal.
+    const bucket = this.configService.get<string>('MINIO_BUCKET', 'uploads');
+    if (!bucket) {
+      throw new Error('MinIO bucket is not configured');
+    }
   }
 }
