@@ -700,4 +700,4 @@ Tái sử dụng
 - [x] Test đã chạy:
   - [x] `pnpm lint` pass.
   - [x] `pnpm typecheck` pass.
-- [ ] Theo chỉ đạo hiện tại: không chạy `pnpm install` full ở phase này; sẽ chạy một lần sau Phase 9.
+- [x] Đã chạy `pnpm install` tổng sau Phase 9 (2026-05-07).

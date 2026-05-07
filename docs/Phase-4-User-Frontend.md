@@ -392,4 +392,4 @@ UX không thể thiếu: loading skeletons, error boundaries, empty states, offl
 - [x] Test đã chạy:
   - [x] `pnpm lint` pass.
   - [x] `pnpm typecheck` pass.
-- [ ] Theo chỉ đạo hiện tại: bỏ qua `pnpm install` chi tiết cho phase này; sẽ chạy một lần tổng sau Phase 9.
+- [x] Đã chạy `pnpm install` tổng sau Phase 9 (2026-05-07).
