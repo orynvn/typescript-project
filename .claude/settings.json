@@ -1,0 +1,51 @@
+{
+  "mcpServers": {
+    "error-learning": {
+      "command": "python3",
+      "args": ["-m", "mcp_error_learning"],
+      "cwd": "./mcp-error-learning"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-bash.sh \"$CLAUDE_TOOL_INPUT\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-edit.sh \"$CLAUDE_TOOL_INPUT\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before stopping, check whether .context/HISTORY.md contains at least one entry dated today (format: [YYYY-MM-DD]). If work was done this session but HISTORY.md has no entry for today: respond {\"ok\": false, \"reason\": \"Append a one-line entry to .context/HISTORY.md for today's work, then update the Recent Context rows in .context/ACTIVE.md with the last 3 HISTORY entries.\"}. If HISTORY.md is already updated today, or if no meaningful code changes were made this session, respond {\"ok\": true}.",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

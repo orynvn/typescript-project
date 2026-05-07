@@ -1,0 +1,50 @@
+{
+  // ─── Agent & Chat ───────────────────────────────────────────────────────────
+  "chat.agent.enabled": true,
+
+  // Custom agents: .github/agents/ directory
+  "chat.agentFilesLocations": {
+    ".github/agents": true
+  },
+
+  // Prompt files: .github/prompts/ directory
+  "chat.promptFilesLocations": {
+    ".github/prompts": true
+  },
+
+  // Instructions files: .github/instructions/ directory
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true
+  },
+
+  // Hooks: VS Code auto-loads from .github/hooks/ by default
+  // (default already includes .github/hooks — only override to add extra paths)
+  "chat.hookFilesLocations": {
+    ".github/hooks": true
+  },
+
+  // Allow subagents to call subagents (nested, max depth 5)
+  "chat.subagents.allowInvocationsFromSubagents": true,
+
+  // Auto-fix compiler / lint errors after the agent edits a file
+  "github.copilot.chat.agent.autoFix": true,
+
+  // ─── MCP Servers ────────────────────────────────────────────────────────────
+  // Config in .vscode/mcp.json (auto-discovered by VS Code)
+
+  // ─── Editor ─────────────────────────────────────────────────────────────────
+  "editor.formatOnSave": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "chat.mcp.serverSampling": {
+    "copilot-workspace-setup/.vscode/mcp.json: error-learning": {
+      "allowedModels": [
+        "copilot/auto",
+        "copilotcli/claude-sonnet-4.6"
+      ]
+    }
+  },
+
+  // ─── Recommended extensions ──────────────────────────────────────────────────
+  // See .vscode/extensions.json
+}

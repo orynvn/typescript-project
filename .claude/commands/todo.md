@@ -1,0 +1,1 @@
+Use the @analyst agent to list all pending tasks for: $ARGUMENTS
